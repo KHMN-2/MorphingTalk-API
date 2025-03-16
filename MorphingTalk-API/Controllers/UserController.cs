@@ -1,4 +1,5 @@
 ﻿using Application.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MorphingTalk_API.Controllers
@@ -21,5 +22,28 @@ namespace MorphingTalk_API.Controllers
             return Ok(users);
         }
 
+        [HttpGet("GetUserById")]
+        [Authorize]
+        public async Task<IActionResult> GetUserById(Guid id)
+        {
+            var user = await _userService.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok(user);
+        }
+
+        [HttpGet("GetUser")]
+        [Authorize]
+        public async Task<IActionResult> GetUser(string email)
+        {
+            var user = await _userService.GetUserByEmailAsync(email);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok(user);
+        }
     }
 }

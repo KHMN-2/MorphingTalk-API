@@ -11,15 +11,12 @@ namespace MorphingTalk_API.Controllers
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly UserManager<User> _userManager;
-        private readonly SignInManager<User> _signInManager;
-        private readonly ITokenService _tokenService;
 
-        public AuthController(UserManager<User> userManager, SignInManager<User> signInManager, ITokenService tokenService)
+        private readonly IAuthService _authService;
+
+        public AuthController(IAuthService authService)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
-            _tokenService = tokenService;
+            this._authService = authService;
         }
 
         [HttpPost("register")]
@@ -43,20 +40,23 @@ namespace MorphingTalk_API.Controllers
                 IsFirstLogin = true
             };
 
-            var result = await _userManager.CreateAsync(user, model.Password);
-
-            if (!result.Succeeded)
+            try
+            {
+                var token = await _authService.Register(user, model.Password);
+                return Ok(new AuthResponseDto
+                {
+                    Success = true,
+                    Message = "User registered successfully",
+                    Token = token
+                });
+            }
+            catch(Exception e) {
                 return BadRequest(new AuthResponseDto
                 {
                     Success = false,
-                    Message = string.Join(", ", result.Errors.Select(e => e.Description))
+                    Message = e.Message
                 });
-
-            return Ok(new AuthResponseDto
-            {
-                Success = true,
-                Message = "User registered successfully"
-            });
+            }
         }
 
         [HttpPost("login")]
@@ -69,24 +69,74 @@ namespace MorphingTalk_API.Controllers
                     Message = "Invalid login details"
                 });
 
-            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
+            try
+            {
+                var token = await _authService.Login(model.Email, model.Password);
+                return Ok(new AuthResponseDto
+                {
+                    Success = true,
+                    Message = "Login successful",
+                    Token = token
+                });
 
-            if (!result.Succeeded)
+            }
+            catch (Exception e) {
                 return Unauthorized(new AuthResponseDto
                 {
                     Success = false,
-                    Message = "Invalid login attempt"
+                    Message = e.Message
                 });
+            }
+        }
 
-            var user = await _userManager.FindByEmailAsync(model.Email);
-            var token = _tokenService.GenerateJwtToken(user);
-
-            return Ok(new AuthResponseDto
+        [HttpGet("SendOTP")]
+        public async Task<IActionResult> SendOTP(string email)
+        {
+            try
             {
-                Success = true,
-                Message = "Login successful",
-                Token = token
-            });
+                await _authService.SendOTP(email);
+                return Ok(new AuthResponseDto
+                {
+                    Success = true,
+                    Message = "OTP sent successfully"
+                });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new AuthResponseDto
+                {
+                    Success = false,
+                    Message = e.Message
+                });
+            }
+        }
+
+        [HttpPost("VerifyOTP")]
+        public async Task<IActionResult> VerifyOTP(OTPDto OTPDto)
+        {
+            try
+            {
+                if (await _authService.VerifyOTP(OTPDto.email, OTPDto.OTP))
+                    return Ok(new AuthResponseDto
+                    {
+                        Success = true,
+                        Message = "Email confirmed"
+                    });
+                else
+                    return BadRequest(new AuthResponseDto
+                    {
+                        Success = false,
+                        Message = "Wrong or expired OTP"
+                    });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new AuthResponseDto
+                {
+                    Success = false,
+                    Message = e.Message
+                });
+            }
         }
     }
 }

@@ -28,5 +28,10 @@ namespace Application.Services
         {
             return _userRepository.GetUserByIdAsync(id);
         }
+        public Task<User> GetUserByEmailAsync(String email)
+        {
+            return _userRepository.GetUserByEmailAsync(email);
+        }
+
     }
 }

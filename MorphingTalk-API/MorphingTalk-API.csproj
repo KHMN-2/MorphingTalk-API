@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>MorphingTalk_API</RootNamespace>
+    <UserSecretsId>b3304f54-021e-4d23-91da-45329e6279aa</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
