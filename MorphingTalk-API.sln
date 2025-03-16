@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35828.75
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MorphingTalk-API", "MorphingTalk-API\MorphingTalk-API.csproj", "{321D2503-1450-4918-89EA-EDD869DAB01A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{DED23991-D9E6-4A5A-9554-7A6BF1123979}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "Application\Application.csproj", "{09D9DBE5-FE3B-4C96-BC41-92D1EB44E874}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{0A39FE08-EEE2-4032-BB59-8B09D89CA39C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{321D2503-1450-4918-89EA-EDD869DAB01A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{321D2503-1450-4918-89EA-EDD869DAB01A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{321D2503-1450-4918-89EA-EDD869DAB01A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{321D2503-1450-4918-89EA-EDD869DAB01A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DED23991-D9E6-4A5A-9554-7A6BF1123979}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DED23991-D9E6-4A5A-9554-7A6BF1123979}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DED23991-D9E6-4A5A-9554-7A6BF1123979}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DED23991-D9E6-4A5A-9554-7A6BF1123979}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09D9DBE5-FE3B-4C96-BC41-92D1EB44E874}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09D9DBE5-FE3B-4C96-BC41-92D1EB44E874}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09D9DBE5-FE3B-4C96-BC41-92D1EB44E874}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09D9DBE5-FE3B-4C96-BC41-92D1EB44E874}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A39FE08-EEE2-4032-BB59-8B09D89CA39C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A39FE08-EEE2-4032-BB59-8B09D89CA39C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A39FE08-EEE2-4032-BB59-8B09D89CA39C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A39FE08-EEE2-4032-BB59-8B09D89CA39C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FC498756-B45C-4758-9DDF-3EEA924B4C42}
+	EndGlobalSection
+EndGlobal
