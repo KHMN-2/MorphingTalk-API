@@ -86,7 +86,7 @@ namespace Infrastructure.Repositories
 
         public async Task<User> GetUserByIdAsync(Guid id)
         {
-            var user = await _identityContext.Users.FindAsync(id);
+            var user = await _identityContext.Users.FindAsync(id.ToString());
             if (user == null) { 
                 throw new KeyNotFoundException("User not found");
             }
