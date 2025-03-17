@@ -51,21 +51,17 @@ namespace Application.Services
         public async Task<string> Login(string email, string password)
         {
             var result = await _signInManager.PasswordSignInAsync(email, password, false, false);
-            if(result.Succeeded)
+            if (result.Succeeded)
             {
                 var user = await _userManager.FindByEmailAsync(email);
-                if (!user.EmailConfirmed) {
+                if (!user.EmailConfirmed)
+                {
                     throw new Exception("Email not confirmed");
                 }
                 var token = _tokenService.GenerateJwtToken(user);
                 return token;
             }
             throw new Exception("Invalid login details");
-        }
-
-        public Task<string> RefreshToken(string token)
-        {
-            throw new NotImplementedException();
         }
 
         public async Task<string> Register(User user, string password)
