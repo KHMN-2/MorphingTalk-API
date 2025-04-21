@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.Interfaces.Repositories;
-using Application.Interfaces.Services;
+using Application.Interfaces.Services.Authentication;
 using Domain.Entities.Users;
 
-namespace Application.Services
+namespace Application.Services.Authentication
 {
 
     public class UserService : IUserService
@@ -28,7 +28,7 @@ namespace Application.Services
         {
             return _userRepository.GetUserByIdAsync(id);
         }
-        public Task<User> GetUserByEmailAsync(String email)
+        public Task<User> GetUserByEmailAsync(string email)
         {
             return _userRepository.GetUserByEmailAsync(email);
         }

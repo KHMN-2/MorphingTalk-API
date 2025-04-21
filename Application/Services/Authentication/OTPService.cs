@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Application.Interfaces.Services;
+using Application.Interfaces.Services.Authentication;
 using Domain.Entities.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Caching.Memory;
-using MorphingTalk_API.Services;
 
-namespace Application.Services
+namespace Application.Services.Authentication
 {
     public class OTPService : IOTPService
     {

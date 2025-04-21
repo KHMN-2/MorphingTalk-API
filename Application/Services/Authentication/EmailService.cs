@@ -3,7 +3,7 @@ using System.Net.Mail;
 using System.Net;
 using Microsoft.AspNetCore.Identity.UI.Services;
 
-namespace MorphingTalk_API.Services
+namespace Application.Services.Authentication
 {
     public class EmailService : IEmailSender
     {

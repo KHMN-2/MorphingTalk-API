@@ -6,14 +6,16 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Infrastructure.Data;
 using Application.Interfaces.Repositories;
-using Application.Interfaces.Services;
-using Application.Services;
 using Infrastructure.Repositories;
 using Domain.Entities.Users;
 using Microsoft.AspNetCore.Identity;
 using Scalar.AspNetCore;
-using MorphingTalk_API.Services;
 using Microsoft.AspNetCore.Authentication;
+using Application.Services.Authentication;
+using Application.Interfaces.Services.Authentication;
+using Application.Interfaces.Services.Chatting;
+using Application.Services.Chatting;
+using MorphingTalk.API.Hubs;
 
 namespace MorphingTalk_API.Extensions
 {
@@ -34,6 +36,13 @@ namespace MorphingTalk_API.Extensions
             services.AddScoped<IOTPService, OTPService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddMemoryCache();
+
+            services.AddSignalR();
+            services.AddScoped<IMessageHandler, VoiceMessageHandler>();
+            services.AddScoped<IMessageHandler, TextMessageHandler>();
+            services.AddScoped<IMessageService, MessageService>();
+
+
 
 
 

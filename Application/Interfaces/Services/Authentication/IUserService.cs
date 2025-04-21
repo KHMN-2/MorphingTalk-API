@@ -5,12 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using Domain.Entities.Users;
 
-namespace Application.Interfaces.Services
+namespace Application.Interfaces.Services.Authentication
 {
     public interface IUserService
     {
         public Task<User> GetUserByIdAsync(Guid id);
-        public Task<User> GetUserByEmailAsync(String email);
+        public Task<User> GetUserByEmailAsync(string email);
         public Task<List<User>> GetAllUsersAsync();
 
     }

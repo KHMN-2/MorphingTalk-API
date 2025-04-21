@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Client</title>
+    <script src="wwwroot/lib/signalr/signalr.js"></script>
+
+</head>
+<body>
+    <div id="messagesList"></div>
+    <input type="text" id="messageInput" />
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("https://127.0.0.1:7009/chathub",
+           { transport: signalR.HttpTransportType.WebSockets,
+            withCredentials: false,
+            }
+
+
+            )
+            .build();
+        
+        connection.start()
+            .then(() => console.log("Connected!"))
+            .catch(err => console.error(err));
+
+        connection.on("ReceiveMessage", (message) => {
+            const li = document.createElement("li");
+            li.textContent = `${message.senderId}: ${message.content}`;
+            document.getElementById("messagesList").appendChild(li);
+        });
+
+        function sendMessage() {
+            const message = document.getElementById("messageInput").value;
+            connection.invoke("SendTextMessage", message)
+                .catch(err => console.error(err));
+            document.getElementById("messageInput").value = "";
+        }
+    </script>
+</body>
+</html>
