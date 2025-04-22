@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using Domain.Entities.Chatting;
 using Microsoft.AspNetCore.Identity;
 
 namespace Domain.Entities.Users
@@ -15,5 +16,6 @@ namespace Domain.Entities.Users
         [Required]
         public bool IsDeactivated { get; set; } = false;
         public bool? IsFirstLogin { get; set; } = null;
+        public List<ChatUser> ChatUsers { get; set; } = new List<ChatUser>();
     }
 }

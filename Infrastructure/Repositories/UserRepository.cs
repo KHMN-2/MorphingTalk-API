@@ -11,10 +11,10 @@ namespace Infrastructure.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IdentityDbContext _context;
         private readonly IdentityDbContext _identityContext;
 
-        public UserRepository(ApplicationDbContext context, IdentityDbContext identityContext)
+        public UserRepository(IdentityDbContext context, IdentityDbContext identityContext)
         {
             _context = context;
             _identityContext = identityContext;

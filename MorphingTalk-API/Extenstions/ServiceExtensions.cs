@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Identity;
 using Scalar.AspNetCore;
 using MorphingTalk_API.Services;
 using Microsoft.AspNetCore.Authentication;
+using Application.Automapper;
 
 namespace MorphingTalk_API.Extensions
 {
@@ -21,9 +22,6 @@ namespace MorphingTalk_API.Extensions
     {
         public static void ConfigureService(this IServiceCollection services, IConfiguration configuration)
         {
-            // Add database context
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
             // Add Identity services
             services.AddDbContext<IdentityDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
@@ -34,10 +32,11 @@ namespace MorphingTalk_API.Extensions
             services.AddScoped<IOTPService, OTPService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddMemoryCache();
+			services.AddSignalR();
 
 
 
-            services.AddIdentity<User, IdentityRole>(options =>
+			services.AddIdentity<User, IdentityRole>(options =>
             {
                 options.Password.RequireDigit = true;
                 options.Password.RequireLowercase = true;
@@ -67,8 +66,11 @@ namespace MorphingTalk_API.Extensions
 
             services.Configure<SmtpSettings>(configuration.GetSection("SmtpSettings"));
             services.AddTransient<EmailService>();
-        }
-    }
+
+			services.AddAutoMapper(typeof(MappingProfile));
+
+		}
+	}
 }
 
 

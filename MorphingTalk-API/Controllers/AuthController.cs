@@ -1,9 +1,9 @@
 ﻿using Domain.Entities.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using MorphingTalk_API.DTOs;
 using Application.Interfaces.Services;
 using MorphingTalk_API.DTOs.Auth;
+using MorphingTalk_API.DTOs;
 
 namespace MorphingTalk_API.Controllers
 {
