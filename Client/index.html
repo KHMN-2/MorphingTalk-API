@@ -41,28 +41,10 @@
             document.getElementById("messagesList").appendChild(msg);
         });
 
-        // Function to handle user leaving the chat
-        connection.on("UserLeft", (userId) => {
-            const msg = document.createElement("div");
-            msg.textContent = `${userId} has left the chat.`;
-            document.getElementById("messagesList").appendChild(msg);
-        });
+        
 
-        // Start the connection
-        connection.start().then(() => {
-            console.log("Connected to SignalR hub");
 
-            // Join the chat when the user connects
-            const userId = document.getElementById("userInput").value;
-            connection.invoke("JoinChat", "chatId", userId); // Replace "chatId" with the actual chat ID
-
-            // Send message on button click
-            document.getElementById("sendButton").addEventListener("click", () => {
-                const message = document.getElementById("messageInput").value;
-                connection.invoke("SendMessage", userId, message);
-                document.getElementById("messageInput").value = ""; // Clear input
-            });
-        }).catch(err => console.error(err));
+            const message = document.getElementById("messageInput").value;
     </script>
 </body>
 </html>

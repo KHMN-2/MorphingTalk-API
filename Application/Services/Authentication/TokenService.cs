@@ -1,13 +1,13 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Application.Interfaces.Services;
+using Application.Interfaces.Services.Authentication;
 using Domain.Entities.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Application.Services
+namespace Application.Services.Authentication
 {
     public class TokenService : ITokenService
     {
@@ -45,7 +45,7 @@ namespace Application.Services
             return tokenHandler.WriteToken(token);
         }
 
-        public async Task<User> GetUserFromToken(string token) 
+        public async Task<User> GetUserFromToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_configuration["JWT:SigningKey"]);

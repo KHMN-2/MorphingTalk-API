@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.Interfaces.Repositories;
-using Application.Interfaces.Services;
+using Application.Interfaces.Services.Authentication;
 using Domain.Entities.Users;
 using Microsoft.AspNetCore.Identity;
-using MorphingTalk_API.Services;
 
-namespace Application.Services
+namespace Application.Services.Authentication
 {
     public class AuthService : IAuthService
     {
@@ -33,13 +32,15 @@ namespace Application.Services
             throw new NotImplementedException();
 
         }
-        public async Task<bool> SendOTP(string email) {
+        public async Task<bool> SendOTP(string email)
+        {
             await _OTPService.SendOTP(email);
             return true;
         }
         public async Task<bool> VerifyOTP(string email, string otp)
         {
-            if (_OTPService.VerifyOTP(email, otp)) {
+            if (_OTPService.VerifyOTP(email, otp))
+            {
                 await _userRepository.ConfirmEmail(email);
                 return true;
             }

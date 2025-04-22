@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Application.Interfaces.Services.Chatting;
+using Domain.Entities.Chatting;
+using Microsoft.AspNetCore.SignalR;
 
 namespace MorphingTalk.API.Hubs
 {

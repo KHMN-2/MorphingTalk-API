@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Domain.Entities.Users;
 
-namespace Application.Interfaces.Services
+namespace Application.Interfaces.Services.Authentication
 {
     public interface IAuthService
     {
