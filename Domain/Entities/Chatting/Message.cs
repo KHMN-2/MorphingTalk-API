@@ -6,12 +6,20 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities.Chatting
 {
-    public class Message
+    public enum MessageStatus
     {
-        public int Id { get; set; }
-        public int ChatId { get; set; }
-        public string Content { get; set; }
+        Sent,
+        Delivered,
+        Read
+    }
+    public abstract class Message
+    {
+        public Guid Id { get; set; }
+        public string SenderId { get; set; }
         public DateTime Timestamp { get; set; }
-        public string UserId { get; set; }
+        public MessageType Type { get; }
+        public  MessageStatus Status { get; set; }
+        public Guid ConversationId { get; set; }
+
     }
 }

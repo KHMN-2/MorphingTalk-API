@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class ChattingTables : Migration
+    public partial class AddAuth : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -56,16 +56,18 @@ namespace Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Chats",
+                name: "Conversations",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastActivityAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Chats", x => x.Id);
+                    table.PrimaryKey("PK_Conversations", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -178,24 +180,18 @@ namespace Infrastructure.Migrations
                 name: "ChatUsers",
                 columns: table => new
                 {
-                    ChatId = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ConversationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     JoinedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Role = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ChatUsers", x => new { x.ChatId, x.UserId });
+                    table.PrimaryKey("PK_ChatUsers", x => new { x.UserId, x.ConversationId });
                     table.ForeignKey(
                         name: "FK_ChatUsers_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ChatUsers_Chats_ChatId",
-                        column: x => x.ChatId,
-                        principalTable: "Chats",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -204,20 +200,48 @@ namespace Infrastructure.Migrations
                 name: "Messages",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ChatId = table.Column<int>(type: "int", nullable: false),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SenderId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    ConversationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Discriminator = table.Column<string>(type: "nvarchar(13)", maxLength: 13, nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    VoiceUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Duration = table.Column<TimeSpan>(type: "time", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Messages", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Messages_Chats_ChatId",
-                        column: x => x.ChatId,
-                        principalTable: "Chats",
+                        name: "FK_Messages_Conversations_ConversationId",
+                        column: x => x.ConversationId,
+                        principalTable: "Conversations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ChatUserConversation",
+                columns: table => new
+                {
+                    ConversationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ParticipantsUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ParticipantsConversationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ChatUserConversation", x => new { x.ConversationId, x.ParticipantsUserId, x.ParticipantsConversationId });
+                    table.ForeignKey(
+                        name: "FK_ChatUserConversation_ChatUsers_ParticipantsUserId_ParticipantsConversationId",
+                        columns: x => new { x.ParticipantsUserId, x.ParticipantsConversationId },
+                        principalTable: "ChatUsers",
+                        principalColumns: new[] { "UserId", "ConversationId" },
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ChatUserConversation_Conversations_ConversationId",
+                        column: x => x.ConversationId,
+                        principalTable: "Conversations",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -262,14 +286,14 @@ namespace Infrastructure.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ChatUsers_UserId",
-                table: "ChatUsers",
-                column: "UserId");
+                name: "IX_ChatUserConversation_ParticipantsUserId_ParticipantsConversationId",
+                table: "ChatUserConversation",
+                columns: new[] { "ParticipantsUserId", "ParticipantsConversationId" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Messages_ChatId",
+                name: "IX_Messages_ConversationId",
                 table: "Messages",
-                column: "ChatId");
+                column: "ConversationId");
         }
 
         /// <inheritdoc />
@@ -291,7 +315,7 @@ namespace Infrastructure.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "ChatUsers");
+                name: "ChatUserConversation");
 
             migrationBuilder.DropTable(
                 name: "Messages");
@@ -300,10 +324,13 @@ namespace Infrastructure.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "AspNetUsers");
+                name: "ChatUsers");
 
             migrationBuilder.DropTable(
-                name: "Chats");
+                name: "Conversations");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUsers");
         }
     }
 }

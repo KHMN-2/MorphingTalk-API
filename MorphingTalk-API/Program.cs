@@ -22,10 +22,13 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAllOrigins",
-        policy => policy.AllowAnyOrigin()
-                        .AllowAnyMethod()
-                        .AllowAnyHeader());
+    options.AddPolicy("reactApp", 
+        builder =>
+        {
+            builder.WithOrigins("http://localhost:3000")
+            .AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+
+        });
 });
 
 builder.Services.ConfigureService(builder.Configuration);
@@ -40,7 +43,6 @@ if (app.Environment.IsDevelopment())
 app.MapOpenApi();
 app.MapScalarApiReference();
 
-app.UseCors("AllowAllOrigins"); // Apply CORS policy
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
@@ -49,5 +51,6 @@ app.MapControllers();
 
 app.UseRouting();
 app.MapHub<ChatHub>("/chathub");
+app.UseCors("reactApp"); // Apply CORS policy
 
 app.Run();

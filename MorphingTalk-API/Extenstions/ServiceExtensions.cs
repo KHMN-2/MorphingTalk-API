@@ -35,17 +35,17 @@ namespace MorphingTalk_API.Extensions
             services.AddScoped<IAuthService, AuthService>();
             services.AddMemoryCache();
 			services.AddSignalR();
-
-            services.AddSignalR();
             services.AddScoped<IMessageHandler, VoiceMessageHandler>();
             services.AddScoped<IMessageHandler, TextMessageHandler>();
             services.AddScoped<IMessageService, MessageService>();
+            services.AddScoped<IConversationRepository, ConversationRepository>();
+            services.AddScoped<IConversationUserRepository, ConversationUserRepository>();
 
 
 
 
 
-			services.AddIdentity<User, IdentityRole>(options =>
+            services.AddIdentity<User, IdentityRole>(options =>
             {
                 options.Password.RequireDigit = true;
                 options.Password.RequireLowercase = true;

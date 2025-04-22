@@ -70,10 +70,9 @@ namespace Application.Services.Authentication
             var result = await _userManager.CreateAsync(user, password);
             if (result.Succeeded)
             {
-                var token = _tokenService.GenerateJwtToken(user);
-                return token;
+                await _OTPService.SendOTP(user.Email);
+                return "";
             }
-            await _OTPService.SendOTP(user.Email);
 
             throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
         }

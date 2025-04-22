@@ -9,7 +9,7 @@ namespace Application.Interfaces.Services.Chatting
 {
     public interface IMessageHandler
     {
-        Task HandleMessageAsync(IMessage message);
+        Task HandleMessageAsync(Message message);
         bool CanHandle(MessageType messageType);
     }
 }

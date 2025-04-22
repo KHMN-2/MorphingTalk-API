@@ -6,12 +6,11 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities.Chatting
 {
-    public class TextMessage : IMessage
+   
+    public class TextMessage : Message
     {
-        public Guid Id { get; set; }
-        public string SenderId { get; set; }
-        public DateTime Timestamp { get; set; }
         public string Content { get; set; }
         public MessageType Type => MessageType.Text;
+
     }
 }

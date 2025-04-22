@@ -19,7 +19,7 @@ namespace Application.Services.Chatting
             _handlers = handlers;
         }
 
-        public async Task ProcessMessageAsync(IMessage message)
+        public async Task ProcessMessageAsync(Message message)
         {
             var handler = _handlers.FirstOrDefault(h => h.CanHandle(message.Type));
 

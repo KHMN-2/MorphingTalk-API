@@ -16,6 +16,6 @@ namespace Domain.Entities.Users
         [Required]
         public bool IsDeactivated { get; set; } = false;
         public bool? IsFirstLogin { get; set; } = null;
-        public List<ChatUser> ChatUsers { get; set; } = new List<ChatUser>();
+        public List<ConversationUser> ChatUsers { get; set; } = new List<ConversationUser>();
     }
 }

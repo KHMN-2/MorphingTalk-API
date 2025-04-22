@@ -10,28 +10,43 @@ namespace Infrastructure.Data
         public IdentityDbContext(DbContextOptions<IdentityDbContext> options) : base(options)
         {
         }
-        public DbSet<Chat> Chats { get; set; }
+        public DbSet<Conversation> Conversations { get; set; }
+
         public DbSet<Message> Messages { get; set; }
-        public DbSet<ChatUser> ChatUsers { get; set; }
+        public DbSet<TextMessage> TextMessages { get; set; }
+        public DbSet<VoiceMessage> VoiceMessages { get; set; }
+        public DbSet<ConversationUser> ConversationUsers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            // Configure the many-to-many relationship between Chat and User
-            modelBuilder.Entity<ChatUser>()
-                .HasKey(cu => new { cu.ChatId, cu.UserId }); // Composite key
 
-            modelBuilder.Entity<ChatUser>()
-                .HasOne(cu => cu.Chat)
-                .WithMany(c => c.ChatUsers)
-                .HasForeignKey(cu => cu.ChatId);
-
-            modelBuilder.Entity<ChatUser>()
-                .HasOne(cu => cu.User)
-                .WithMany(u => u.ChatUsers)
+            modelBuilder.Entity<ConversationUser>()
+                .HasOne<User>()
+                .WithMany()
                 .HasForeignKey(cu => cu.UserId);
 
-            // Additional configurations can go here
+            modelBuilder.Entity<ConversationUser>()
+                .HasOne<Conversation>()
+                .WithMany()
+                .HasForeignKey(cu => cu.ConversationId);
+
+            modelBuilder.Entity<Message>()
+                .HasOne<Conversation>()
+                .WithMany()
+                .HasForeignKey(m => m.ConversationId);
+
+            modelBuilder.Entity<TextMessage>()
+                .HasBaseType<Message>();
+            modelBuilder.Entity<VoiceMessage>()
+                .HasBaseType<Message>();
+
+
+
+            modelBuilder.Entity<ConversationUser>()
+                .HasKey(cu => new { cu.UserId, cu.ConversationId });
+
+
         }
     }
 }

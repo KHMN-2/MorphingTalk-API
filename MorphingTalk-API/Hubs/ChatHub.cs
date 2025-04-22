@@ -6,22 +6,21 @@ namespace MorphingTalk.API.Hubs
 {
     public class ChatHub : Hub
     {
-        public async Task SendMessage(string user, string message)
-        {
-            await Clients.All.SendAsync("ReceiveMessage", user, message);
-        }
+        
+        //public async Task JoinChat(UserConnection conn)
+        //{
+        //    await Clients.All.SendAsync("ReceiveMessage", "admin", $"{conn.Username} has joined");
+        //}
 
-        public async Task JoinChat(string chatId, string userId)
-        {
-            await Groups.AddToGroupAsync(Context.ConnectionId, chatId);
-            await Clients.Group(chatId).SendAsync("UserJoined", userId);
-        }
+        //public async Task JoinSpecificChatRoom(UserConnection conn)
+        //{
+        //    await Groups.AddToGroupAsync(Context.ConnectionId, conn.Chatroom);
+        //    await Clients.Group(conn.Chatroom).SendAsync("ReceiveMessage", "admin", $"{conn.Username} has joined {conn.Chatroom}");
+        //}
 
-        public async Task LeaveChat(string chatId, string userId)
-        {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, chatId);
-            await Clients.Group(chatId).SendAsync("UserLeft", userId);
-        }
+ 
+
+
         //private readonly IMessageService _messageService;
         //private readonly ILogger<ChatHub> _logger;
 

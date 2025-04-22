@@ -9,7 +9,7 @@ namespace Application.Interfaces.Services.Chatting
 {
     public interface IMessageService
     {
-        Task ProcessMessageAsync(IMessage message);
+        Task ProcessMessageAsync(Message message);
 
     }
 }

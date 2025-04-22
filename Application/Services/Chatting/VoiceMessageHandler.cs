@@ -20,7 +20,7 @@ namespace Application.Services.Chatting
 
         public bool CanHandle(MessageType messageType) => messageType == MessageType.Voice;
 
-        public async Task HandleMessageAsync(IMessage message)
+        public async Task HandleMessageAsync(Message message)
         {
             var voiceMessage = message as VoiceMessage;
             if (voiceMessage == null) throw new InvalidOperationException("Invalid message type");
