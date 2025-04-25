@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AddAuth : Migration
+    public partial class databases : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -177,21 +177,29 @@ namespace Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ChatUsers",
+                name: "ConversationUsers",
                 columns: table => new
                 {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ConversationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     JoinedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Role = table.Column<int>(type: "int", nullable: false)
+                    Role = table.Column<int>(type: "int", nullable: false),
+                    ConversationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    LeftConversation = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ChatUsers", x => new { x.UserId, x.ConversationId });
+                    table.PrimaryKey("PK_ConversationUsers", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ChatUsers_AspNetUsers_UserId",
+                        name: "FK_ConversationUsers_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ConversationUsers_Conversations_ConversationId",
+                        column: x => x.ConversationId,
+                        principalTable: "Conversations",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -201,11 +209,11 @@ namespace Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SenderId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
+                    SentAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ConversationUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ConversationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Discriminator = table.Column<string>(type: "nvarchar(13)", maxLength: 13, nullable: false),
+                    MessageType = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     VoiceUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Duration = table.Column<TimeSpan>(type: "time", nullable: true)
@@ -214,36 +222,17 @@ namespace Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_Messages", x => x.Id);
                     table.ForeignKey(
+                        name: "FK_Messages_ConversationUsers_ConversationUserId",
+                        column: x => x.ConversationUserId,
+                        principalTable: "ConversationUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
                         name: "FK_Messages_Conversations_ConversationId",
                         column: x => x.ConversationId,
                         principalTable: "Conversations",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ChatUserConversation",
-                columns: table => new
-                {
-                    ConversationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ParticipantsUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ParticipantsConversationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ChatUserConversation", x => new { x.ConversationId, x.ParticipantsUserId, x.ParticipantsConversationId });
-                    table.ForeignKey(
-                        name: "FK_ChatUserConversation_ChatUsers_ParticipantsUserId_ParticipantsConversationId",
-                        columns: x => new { x.ParticipantsUserId, x.ParticipantsConversationId },
-                        principalTable: "ChatUsers",
-                        principalColumns: new[] { "UserId", "ConversationId" },
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ChatUserConversation_Conversations_ConversationId",
-                        column: x => x.ConversationId,
-                        principalTable: "Conversations",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -286,14 +275,25 @@ namespace Infrastructure.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ChatUserConversation_ParticipantsUserId_ParticipantsConversationId",
-                table: "ChatUserConversation",
-                columns: new[] { "ParticipantsUserId", "ParticipantsConversationId" });
+                name: "IX_ConversationUsers_ConversationId_UserId",
+                table: "ConversationUsers",
+                columns: new[] { "ConversationId", "UserId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ConversationUsers_UserId",
+                table: "ConversationUsers",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Messages_ConversationId",
                 table: "Messages",
                 column: "ConversationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Messages_ConversationUserId",
+                table: "Messages",
+                column: "ConversationUserId");
         }
 
         /// <inheritdoc />
@@ -315,22 +315,19 @@ namespace Infrastructure.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "ChatUserConversation");
-
-            migrationBuilder.DropTable(
                 name: "Messages");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "ChatUsers");
-
-            migrationBuilder.DropTable(
-                name: "Conversations");
+                name: "ConversationUsers");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Conversations");
         }
     }
 }

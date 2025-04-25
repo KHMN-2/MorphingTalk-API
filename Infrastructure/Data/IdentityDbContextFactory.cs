@@ -9,11 +9,11 @@ using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure.Data
 {
-    class IdentityDbContextFactory : IDesignTimeDbContextFactory<IdentityDbContext>
+    class ApplicationDbContextFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
     {
-        public IdentityDbContext CreateDbContext(string[] args)
+        public ApplicationDbContext CreateDbContext(string[] args)
         {
-            var optionsBuilder = new DbContextOptionsBuilder<IdentityDbContext>();
+            var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
 
             // Get configuration from appsettings.json
             IConfigurationRoot configuration = new ConfigurationBuilder()
@@ -25,7 +25,7 @@ namespace Infrastructure.Data
 
             optionsBuilder.UseSqlServer(connectionString);
 
-            return new IdentityDbContext(optionsBuilder.Options);
+            return new ApplicationDbContext(optionsBuilder.Options);
         }
     }
 }

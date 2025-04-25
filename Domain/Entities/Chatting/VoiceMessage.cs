@@ -10,7 +10,7 @@ namespace Domain.Entities.Chatting
     {
         
         public string VoiceUrl { get; set; }
-        public TimeSpan Duration { get; set; }
+        public double VoiceDuration { get; set; }
         public MessageType Type => MessageType.Voice;
     }
 }

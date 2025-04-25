@@ -2,10 +2,25 @@
 {
     public class MessageDto
     {
-        public int Id { get; set; }
-        public int ChatId { get; set; }
-        public string Content { get; set; }
-        public DateTime Timestamp { get; set; }
-        public string UserId { get; set; }
+        public string Type { get; set; } // "text" or "voice"
+        public string Text { get; set; }
+        public string VoiceFileUrl { get; set; }
+        public double DurationSeconds { get; set; }
+    }
+    public class MessageSummaryDto
+    {
+        public Guid Id { get; set; }
+        public string Type { get; set; } // e.g. "text", "voice"
+        public string SenderUserId { get; set; }
+        public string SenderDisplayName { get; set; }
+        public string Text { get; set; }
+        public DateTime SentAt { get; set; }
+    }
+    public class SendMessageDto
+    {
+        public string Type { get; set; } // "text" or "voice"
+        public string Text { get; set; } // Required for "text"
+        public string VoiceFileUrl { get; set; } // Required for "voice"
+        public double? DurationSeconds { get; set; } // Optional for "voice"
     }
 }

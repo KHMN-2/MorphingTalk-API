@@ -5,48 +5,59 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Data
 {
-    public class IdentityDbContext : IdentityDbContext<User>
+    public class ApplicationDbContext : IdentityDbContext<User>
     {
-        public IdentityDbContext(DbContextOptions<IdentityDbContext> options) : base(options)
+        public ApplicationDbContext(DbContextOptions<IdentityDbContext> options) : base(options)
         {
         }
-        public DbSet<Conversation> Conversations { get; set; }
 
+        public ApplicationDbContext(DbContextOptions options) : base(options)
+        {
+        }
+
+        public DbSet<Conversation> Conversations { get; set; }
+        public DbSet<ConversationUser> ConversationUsers { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<TextMessage> TextMessages { get; set; }
         public DbSet<VoiceMessage> VoiceMessages { get; set; }
-        public DbSet<ConversationUser> ConversationUsers { get; set; }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder builder)
         {
-            base.OnModelCreating(modelBuilder);
+            base.OnModelCreating(builder);
 
-            modelBuilder.Entity<ConversationUser>()
-                .HasOne<User>()
-                .WithMany()
-                .HasForeignKey(cu => cu.UserId);
+            builder.Entity<Message>()
+                .HasDiscriminator<string>("MessageType")
+                .HasValue<TextMessage>("Text")
+                .HasValue<VoiceMessage>("Voice");
 
-            modelBuilder.Entity<ConversationUser>()
-                .HasOne<Conversation>()
-                .WithMany()
-                .HasForeignKey(cu => cu.ConversationId);
+            builder.Entity<ConversationUser>()
+                .HasIndex(cu => new { cu.ConversationId, cu.UserId })
+                .IsUnique();
 
-            modelBuilder.Entity<Message>()
-                .HasOne<Conversation>()
-                .WithMany()
-                .HasForeignKey(m => m.ConversationId);
-
-            modelBuilder.Entity<TextMessage>()
-                .HasBaseType<Message>();
-            modelBuilder.Entity<VoiceMessage>()
-                .HasBaseType<Message>();
+            builder.Entity<ConversationUser>()
+               .HasOne(cu => cu.Conversation)
+               .WithMany(c => c.ConversationUsers)
+               .HasForeignKey(cu => cu.ConversationId)
+               .OnDelete(DeleteBehavior.Cascade);
 
 
+            builder.Entity<ConversationUser>()
+                .HasOne(cu => cu.User)
+                .WithMany(u => u.ConversationUsers)
+                .HasForeignKey(cu => cu.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<ConversationUser>()
-                .HasKey(cu => new { cu.UserId, cu.ConversationId });
+            builder.Entity<Message>()
+                .HasOne(m => m.ConversationUser)
+                .WithMany(cu => cu.Messages)
+                .HasForeignKey(m => m.ConversationUserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-
+            builder.Entity<Message>()
+                .HasOne(m => m.Conversation)
+                .WithMany(c => c.Messages)
+                .HasForeignKey(m => m.ConversationId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

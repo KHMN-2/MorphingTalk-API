@@ -45,11 +45,11 @@ app.MapScalarApiReference();
 
 app.UseHttpsRedirection();
 
+app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllers();
 
-app.UseRouting();
+app.MapControllers();
 app.MapHub<ChatHub>("/chathub");
 app.UseCors("reactApp"); // Apply CORS policy
 

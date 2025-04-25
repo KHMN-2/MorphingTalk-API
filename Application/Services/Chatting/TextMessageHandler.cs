@@ -9,27 +9,27 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Services.Chatting
 {
-    public class TextMessageHandler : IMessageHandler
-    {
-        ILogger<TextMessageHandler> _logger;
+    //public class TextMessageHandler : IMessageHandler
+    //{
+    //    ILogger<TextMessageHandler> _logger;
 
-        public TextMessageHandler(ILogger<TextMessageHandler> logger)
-        {
-            _logger = logger;
-        }
+    //    public TextMessageHandler(ILogger<TextMessageHandler> logger)
+    //    {
+    //        _logger = logger;
+    //    }
 
-        public bool CanHandle(MessageType messageType) => messageType == MessageType.Text;
+    //    public bool CanHandle(MessageType messageType) => messageType == MessageType.Text;
 
-        public async Task HandleMessageAsync(Message message)
-        {
-            var textMessage = message as TextMessage;
-            if (textMessage == null) throw new InvalidOperationException("Invalid message type");
+    //    public async Task HandleMessageAsync(Message message)
+    //    {
+    //        var textMessage = message as TextMessage;
+    //        if (textMessage == null) throw new InvalidOperationException("Invalid message type");
 
-            textMessage.Content += "dsa";
+    //        textMessage.Content += "dsa";
 
-            // Add text-specific processing logic here
-            _logger.LogInformation($"Processing text message: {textMessage.Content}");
-            await Task.CompletedTask;
-        }
-    }
+    //        // Add text-specific processing logic here
+    //        _logger.LogInformation($"Processing text message: {textMessage.Content}");
+    //        await Task.CompletedTask;
+    //    }
+    //}
 }

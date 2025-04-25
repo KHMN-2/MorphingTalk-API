@@ -11,9 +11,9 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Infrastructure.Migrations
 {
-    [DbContext(typeof(IdentityDbContext))]
-    [Migration("20250422125344_AddChatting")]
-    partial class AddChatting
+    [DbContext(typeof(ApplicationDbContext))]
+    [Migration("20250425041338_databases")]
+    partial class databases
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,43 +24,6 @@ namespace Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("ChatUserConversation", b =>
-                {
-                    b.Property<Guid>("ConversationId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ParticipantsUserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<Guid>("ParticipantsConversationId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("ConversationId", "ParticipantsUserId", "ParticipantsConversationId");
-
-                    b.HasIndex("ParticipantsUserId", "ParticipantsConversationId");
-
-                    b.ToTable("ChatUserConversation");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Chatting.ChatUser", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<Guid>("ConversationId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("JoinedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Role")
-                        .HasColumnType("int");
-
-                    b.HasKey("UserId", "ConversationId");
-
-                    b.ToTable("ChatUsers");
-                });
 
             modelBuilder.Entity("Domain.Entities.Chatting.Conversation", b =>
                 {
@@ -86,6 +49,38 @@ namespace Infrastructure.Migrations
                     b.ToTable("Conversations");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Chatting.ConversationUser", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ConversationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("JoinedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("LeftConversation")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("ConversationId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("ConversationUsers");
+                });
+
             modelBuilder.Entity("Domain.Entities.Chatting.Message", b =>
                 {
                     b.Property<Guid>("Id")
@@ -95,28 +90,29 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("ConversationId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Discriminator")
-                        .IsRequired()
-                        .HasMaxLength(13)
-                        .HasColumnType("nvarchar(13)");
+                    b.Property<Guid>("ConversationUserId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("SenderId")
+                    b.Property<string>("MessageType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ConversationId");
 
+                    b.HasIndex("ConversationUserId");
+
                     b.ToTable("Messages");
 
-                    b.HasDiscriminator().HasValue("Message");
+                    b.HasDiscriminator<string>("MessageType").HasValue("Message");
 
                     b.UseTphMappingStrategy();
                 });
@@ -343,7 +339,7 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasDiscriminator().HasValue("TextMessage");
+                    b.HasDiscriminator().HasValue("Text");
                 });
 
             modelBuilder.Entity("Domain.Entities.Chatting.VoiceMessage", b =>
@@ -357,42 +353,45 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasDiscriminator().HasValue("VoiceMessage");
+                    b.HasDiscriminator().HasValue("Voice");
                 });
 
-            modelBuilder.Entity("ChatUserConversation", b =>
+            modelBuilder.Entity("Domain.Entities.Chatting.ConversationUser", b =>
                 {
-                    b.HasOne("Domain.Entities.Chatting.Conversation", null)
-                        .WithMany()
+                    b.HasOne("Domain.Entities.Chatting.Conversation", "Conversation")
+                        .WithMany("ConversationUsers")
                         .HasForeignKey("ConversationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Entities.Chatting.ChatUser", null)
-                        .WithMany()
-                        .HasForeignKey("ParticipantsUserId", "ParticipantsConversationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Domain.Entities.Chatting.ChatUser", b =>
-                {
                     b.HasOne("Domain.Entities.Users.User", "User")
-                        .WithMany("ChatUsers")
+                        .WithMany("ConversationUsers")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Conversation");
 
                     b.Navigation("User");
                 });
 
             modelBuilder.Entity("Domain.Entities.Chatting.Message", b =>
                 {
-                    b.HasOne("Domain.Entities.Chatting.Conversation", null)
-                        .WithMany()
+                    b.HasOne("Domain.Entities.Chatting.Conversation", "Conversation")
+                        .WithMany("Messages")
                         .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Chatting.ConversationUser", "ConversationUser")
+                        .WithMany("Messages")
+                        .HasForeignKey("ConversationUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Conversation");
+
+                    b.Navigation("ConversationUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -446,9 +445,21 @@ namespace Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Domain.Entities.Chatting.Conversation", b =>
+                {
+                    b.Navigation("ConversationUsers");
+
+                    b.Navigation("Messages");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Chatting.ConversationUser", b =>
+                {
+                    b.Navigation("Messages");
+                });
+
             modelBuilder.Entity("Domain.Entities.Users.User", b =>
                 {
-                    b.Navigation("ChatUsers");
+                    b.Navigation("ConversationUsers");
                 });
 #pragma warning restore 612, 618
         }

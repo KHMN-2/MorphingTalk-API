@@ -18,7 +18,6 @@ namespace MorphingTalk.API.Hubs
         //    await Clients.Group(conn.Chatroom).SendAsync("ReceiveMessage", "admin", $"{conn.Username} has joined {conn.Chatroom}");
         //}
 
- 
 
 
         //private readonly IMessageService _messageService;

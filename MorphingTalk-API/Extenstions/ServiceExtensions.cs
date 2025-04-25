@@ -25,7 +25,7 @@ namespace MorphingTalk_API.Extensions
         public static void ConfigureService(this IServiceCollection services, IConfiguration configuration)
         {
             // Add Identity services
-            services.AddDbContext<IdentityDbContext>(options =>
+            services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
             services.AddScoped<IUserRepository, UserRepository>();
@@ -35,11 +35,12 @@ namespace MorphingTalk_API.Extensions
             services.AddScoped<IAuthService, AuthService>();
             services.AddMemoryCache();
 			services.AddSignalR();
-            services.AddScoped<IMessageHandler, VoiceMessageHandler>();
-            services.AddScoped<IMessageHandler, TextMessageHandler>();
+            //services.AddScoped<IMessageHandler, VoiceMessageHandler>();
+            //services.AddScoped<IMessageHandler, TextMessageHandler>();
             services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<IConversationRepository, ConversationRepository>();
             services.AddScoped<IConversationUserRepository, ConversationUserRepository>();
+            services.AddScoped<IMessageRepository, MessageRepository>();
 
 
 
@@ -52,7 +53,7 @@ namespace MorphingTalk_API.Extensions
                 options.Password.RequireUppercase = true;
                 options.Password.RequireNonAlphanumeric = true;
                 options.Password.RequiredLength = 8;
-            }).AddEntityFrameworkStores<IdentityDbContext>();
+            }).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 
             services.AddAuthentication(options =>
             {

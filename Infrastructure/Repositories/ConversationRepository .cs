@@ -1,68 +1,66 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Application.Interfaces.Repositories;
+﻿using Application.Interfaces.Repositories;
 using Domain.Entities.Chatting;
-using Domain.Entities.Users;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace Infrastructure.Repositories
+public class ConversationRepository : IConversationRepository
 {
-    public class ConversationRepository : IConversationRepository
+    private readonly ApplicationDbContext _context;
+
+    public ConversationRepository(ApplicationDbContext context)
     {
-        private readonly IdentityDbContext _context;
+        _context = context;
+    }
 
-        public ConversationRepository(IdentityDbContext context)
-        {
-            _context = context;
-        }
+    // Get Conversation by Id (with participants)
+    public async Task<Conversation> GetByIdAsync(Guid id)
+    {
+        return await _context.Conversations
+            .Include(c => c.ConversationUsers)
+                .ThenInclude(cu => cu.User)
+            .Include(c => c.Messages)
+            .FirstOrDefaultAsync(c => c.Id == id);
+    }
 
-        public async Task<Conversation> GetConversationByIdAsync(Guid chatId)
-        {
-            return await _context.Conversations
-                .FirstOrDefaultAsync(c => c.Id == chatId);
-        }
+    // Get all Conversations for a user
+    public async Task<List<Conversation>> GetConversationsForUserAsync(string userId)
+    {
+        return await _context.ConversationUsers
+            .Where(cu => cu.UserId == userId)
+            .Include(cu => cu.Conversation)
+                .ThenInclude(c => c.ConversationUsers)
+                    .ThenInclude(cu2 => cu2.User)
+            .Select(cu => cu.Conversation)
+            .ToListAsync();
+    }
 
-        public async Task AddConversationAsync(Conversation chat)
+    // Create a new conversation
+    public async Task<Conversation> AddAsync(Conversation conversation)
+    {
+        _context.Conversations.Add(conversation);
+        await _context.SaveChangesAsync();
+        return conversation;
+    }
+
+    // Update a conversation
+    public async Task UpdateAsync(Conversation conversation)
+    {
+        _context.Conversations.Update(conversation);
+        await _context.SaveChangesAsync();
+    }
+
+    // Delete a conversation
+    public async Task DeleteAsync(Guid id)
+    {
+        var conversation = await _context.Conversations.FindAsync(id);
+        if (conversation != null)
         {
-            await _context.Conversations.AddAsync(chat);
+            _context.Conversations.Remove(conversation);
             await _context.SaveChangesAsync();
-        }
-
-        public async Task AddMessageAsync(Message message)
-        {
-            await _context.Messages.AddAsync(message);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task AddUserToConversationAsync(Guid chatId, string userId)
-        {
-            var chatUser = new ConversationUser { ConversationId = chatId, UserId = userId };
-            await _context.ConversationUsers.AddAsync(chatUser);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task RemoveUserFromConversationAsync(Guid chatId, string userId)
-        {
-            var chatUser = await _context.ConversationUsers
-                .FirstOrDefaultAsync(cu => cu.ConversationId == chatId && cu.UserId == userId);
-
-            if (chatUser != null)
-            {
-                _context.ConversationUsers.Remove(chatUser);
-                await _context.SaveChangesAsync();
-            }
-        }
-
-        public async Task<List<User>> GetUsersInConversationAsync(Guid chatId)
-        {
-            return await _context.ConversationUsers
-                .Where(cu => cu.ConversationId == chatId)
-                .Select(cu => cu.User)
-                .ToListAsync();
         }
     }
 }
