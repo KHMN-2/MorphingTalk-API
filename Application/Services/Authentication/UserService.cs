@@ -24,7 +24,7 @@ namespace Application.Services.Authentication
             return _userRepository.GetAllUsersAsync();
         }
 
-        public Task<User> GetUserByIdAsync(Guid id)
+        public Task<User> GetUserByIdAsync(string id)
         {
             return _userRepository.GetUserByIdAsync(id);
         }

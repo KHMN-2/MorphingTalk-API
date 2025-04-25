@@ -25,6 +25,6 @@ namespace MorphingTalk_API.DTOs.Chatting
     {
         public string Name { get; set; }
         public ConversationType Type { get; set; } // "group" or "direct"
-        public List<string> UserIds { get; set; } // Initial user list (can include self)
+        public List<string> UserEmails { get; set; } // Initial user list (can include self)
     }
 }

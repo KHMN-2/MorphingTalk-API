@@ -24,7 +24,7 @@ namespace MorphingTalk_API.Controllers
 
         [HttpGet("GetUserById")]
         [Authorize]
-        public async Task<IActionResult> GetUserById(Guid id)
+        public async Task<IActionResult> GetUserById(string id)
         {
             var user = await _userService.GetUserByIdAsync(id);
             if (user == null)

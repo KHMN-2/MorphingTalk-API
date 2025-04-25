@@ -41,9 +41,7 @@ namespace MorphingTalk_API.Extensions
             services.AddScoped<IConversationRepository, ConversationRepository>();
             services.AddScoped<IConversationUserRepository, ConversationUserRepository>();
             services.AddScoped<IMessageRepository, MessageRepository>();
-
-
-
+            services.AddScoped<IFriendshipRepository, FriendshipRepository>();
 
 
             services.AddIdentity<User, IdentityRole>(options =>

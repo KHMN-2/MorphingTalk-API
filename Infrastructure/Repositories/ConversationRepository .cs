@@ -29,13 +29,28 @@ public class ConversationRepository : IConversationRepository
     // Get all Conversations for a user
     public async Task<List<Conversation>> GetConversationsForUserAsync(string userId)
     {
+        // include Last Message
         return await _context.ConversationUsers
             .Where(cu => cu.UserId == userId)
+            .Include(cu => cu.Conversation)
+                .ThenInclude(c => c.Messages)
+                    .ThenInclude(m => m.ConversationUser)
             .Include(cu => cu.Conversation)
                 .ThenInclude(c => c.ConversationUsers)
                     .ThenInclude(cu2 => cu2.User)
             .Select(cu => cu.Conversation)
             .ToListAsync();
+    }
+
+    public async Task<Conversation> GetOneToOneConversationAsync(string userId1, string userId2)
+    {
+        return await _context.Conversations
+            .Include(c => c.ConversationUsers)
+                .ThenInclude(cu => cu.User)
+            .FirstOrDefaultAsync(c => c.Type == ConversationType.OneToOne &&
+                                      c.ConversationUsers.Any(cu => cu.UserId == userId1) &&
+                                      c.ConversationUsers.Any(cu => cu.UserId == userId2));
+    
     }
 
     // Create a new conversation

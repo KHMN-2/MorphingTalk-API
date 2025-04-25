@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Chatting;
+﻿using System.Reflection.Emit;
+using Domain.Entities.Chatting;
 using Domain.Entities.Users;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,7 @@ namespace Infrastructure.Data
         public DbSet<Message> Messages { get; set; }
         public DbSet<TextMessage> TextMessages { get; set; }
         public DbSet<VoiceMessage> VoiceMessages { get; set; }
+        public DbSet<Friendship> Friendships { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -58,6 +60,24 @@ namespace Infrastructure.Data
                 .WithMany(c => c.Messages)
                 .HasForeignKey(m => m.ConversationId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Friendship>()
+                .HasKey(f => f.Id); // or HasKey(f => new { f.UserId1, f.UserId2 });
+
+            builder.Entity<Friendship>()
+                .HasOne(f => f.User1)
+                .WithMany()
+                .HasForeignKey(f => f.UserId1)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Friendship>()
+                .HasOne(f => f.User2)
+                .WithMany()
+                .HasForeignKey(f => f.UserId2)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Friendship>()
+                .HasIndex(f => new { f.UserId1, f.UserId2 }).IsUnique();
         }
     }
 }

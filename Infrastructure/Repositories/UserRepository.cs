@@ -79,14 +79,19 @@ namespace Infrastructure.Repositories
             return Task.FromResult(users);
         }
 
-        public Task<User> GetUserByEmailAsync(string email)
+        public async Task<User> GetUserByEmailAsync(string email)
         {
-            throw new NotImplementedException();
+            var user = _identityContext.Users.FirstOrDefault<User>(u => u.Email == email);
+            if (user == null)
+            {
+                throw new KeyNotFoundException("User not found");
+            }
+            return user;
         }
 
-        public async Task<User> GetUserByIdAsync(Guid id)
+        public async Task<User> GetUserByIdAsync(string id)
         {
-            var user = await _identityContext.Users.FindAsync(id.ToString());
+            var user = await _identityContext.Users.FindAsync(id);
             if (user == null) { 
                 throw new KeyNotFoundException("User not found");
             }

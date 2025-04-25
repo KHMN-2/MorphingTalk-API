@@ -24,5 +24,7 @@ namespace Application.Interfaces.Repositories
 
         // Delete a conversation
         public  Task DeleteAsync(Guid id);
+
+        public Task<Conversation> GetOneToOneConversationAsync(string userId1, string userId2);
     }
 }

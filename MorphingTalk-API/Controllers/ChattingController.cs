@@ -15,15 +15,18 @@ public class ChattingController : ControllerBase
     private readonly IConversationRepository _conversationRepo;
     private readonly IConversationUserRepository _conversationUserRepo;
     private readonly IMessageRepository _messageRepo;
+    private readonly IUserRepository _userRepo;
 
     public ChattingController(
         IConversationRepository conversationRepo,
         IConversationUserRepository conversationUserRepo,
+        IUserRepository userRepository,
         IMessageRepository messageRepo)
     {
         _conversationRepo = conversationRepo;
         _conversationUserRepo = conversationUserRepo;
         _messageRepo = messageRepo;
+        _userRepo = userRepository;
     }
 
     // GET: api/Chatting/conversations
@@ -33,30 +36,38 @@ public class ChattingController : ControllerBase
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         var conversations = await _conversationRepo.GetConversationsForUserAsync(userId);
 
-        var result = conversations.Select(conversation => new ConversationDto
-        {
-            Id = conversation.Id,
-            Name = conversation.Name,
-            Type = conversation.Type,
-            CreatedAt = conversation.CreatedAt,
-            Users = conversation.ConversationUsers?.Select(cu => new ConversationUserDto
+        var result = conversations.Select(conversation => {
+            var name = conversation.Name;
+            if (conversation.Type == ConversationType.OneToOne && conversation.ConversationUsers.Count == 2)
             {
-                UserId = cu.UserId,
-                DisplayName = cu.User?.FullName,
-            }).ToList(),
-            LastMessage = conversation.Messages?
-                .OrderByDescending(m => m.SentAt)
-                .Take(1)
-                .Select(m => new MessageSummaryDto
+                var otherUser = conversation.ConversationUsers.First(cu => cu.UserId != User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
+                name = otherUser.User?.FullName;
+            }
+            return new ConversationDto
+            {
+                Id = conversation.Id,
+                Name = name,
+                Type = conversation.Type,
+                CreatedAt = conversation.CreatedAt,
+                Users = conversation.ConversationUsers?.Select(cu => new ConversationUserDto
                 {
-                    Id = m.Id,
-                    Type = m is TextMessage ? "text" : m is VoiceMessage ? "voice" : "unknown",
-                    SenderUserId = m.ConversationUser?.UserId,
-                    SenderDisplayName = m.ConversationUser?.User?.FullName,
-                    Text = m is TextMessage tm ? tm.Content : null,
-                    SentAt = m.SentAt
-                }).FirstOrDefault()
-        }).ToList();
+                    UserId = cu.UserId,
+                    DisplayName = cu.User?.FullName,
+                }).ToList(),
+                LastMessage = conversation.Messages?
+                    .OrderByDescending(m => m.SentAt)
+                    .Take(1)
+                    .Select(m => new MessageSummaryDto
+                    {
+                        Id = m.Id,
+                        Type = m is TextMessage ? "text" : m is VoiceMessage ? "voice" : "unknown",
+                        SenderUserId = m.ConversationUser?.UserId,
+                        SenderDisplayName = m.ConversationUser?.User?.FullName,
+                        Text = m is TextMessage tm ? tm.Content : null,
+                        SentAt = m.SentAt
+                    }).FirstOrDefault()
+            };
+            }).ToList();
 
         return Ok(result);
     }
@@ -69,10 +80,16 @@ public class ChattingController : ControllerBase
         if (conversation == null)
             return NotFound();
 
+        var name = conversation.Name;
+        if(conversation.Type == ConversationType.OneToOne && conversation.ConversationUsers.Count == 2)
+        {
+            var otherUser = conversation.ConversationUsers.First(cu => cu.UserId != User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
+            name = otherUser.User?.FullName;
+        }
         var result = new ConversationDto
         {
             Id = conversation.Id,
-            Name = conversation.Name,
+            Name = name,
             Type = conversation.Type,
             CreatedAt = conversation.CreatedAt,
             Users = conversation.ConversationUsers?.Select(cu => new ConversationUserDto
@@ -103,13 +120,59 @@ public class ChattingController : ControllerBase
     {
         var creatorUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
-        // Create Conversation entity
+        if(dto.Type == ConversationType.OneToOne)
+        {
+            if(dto.UserEmails.Count != 1)
+            {
+                return BadRequest("One-to-one conversations must have exactly 1 users.");
+            }
+            var friendUser = await _userRepo.GetUserByEmailAsync(dto.UserEmails[0]);
+            if (friendUser == null)
+            {
+                return NotFound("user not found.");
+            }
+            if(creatorUserId == friendUser.Id)
+            {
+                return BadRequest("Cannot create a conversation with the same user.");
+            }
+
+            var existingConversation = await _conversationRepo.GetOneToOneConversationAsync(creatorUserId, friendUser.Id);
+            if (existingConversation != null)
+            {
+
+                return Ok(new ConversationDto {
+                    Id = existingConversation.Id,
+                    Name = friendUser.FullName,
+                    Type = existingConversation.Type,
+                    CreatedAt = existingConversation.CreatedAt,
+                    Users = existingConversation.ConversationUsers.Select(cu => new ConversationUserDto
+                    {
+                        UserId = cu.UserId,
+                        DisplayName = cu.User?.FullName,
+                    }).ToList(),
+                });
+            }
+
+        }
+
+        var UserIds = new List<string> { };
+        foreach (var userEmail in dto.UserEmails)
+        {
+            var user = await _userRepo.GetUserByEmailAsync(userEmail);
+            if (user == null)
+            {
+                return NotFound($"User with email {userEmail} not found.");
+            }
+            UserIds.Add(user.Id);
+        }
+        
+            // Create Conversation entity
         var conversation = new Conversation
         {
             Name = dto.Name,
             Type = dto.Type,
             CreatedAt = DateTime.UtcNow,
-            ConversationUsers = dto.UserIds
+            ConversationUsers = UserIds
                 .Append(creatorUserId)
                 .Distinct()
                 .Select(userId => new ConversationUser { UserId = userId })
@@ -135,6 +198,7 @@ public class ChattingController : ControllerBase
         return CreatedAtAction(nameof(GetConversation), new { conversationId = created.Id }, result);
     }
 
+
     // POST: api/Chatting/conversations/{conversationId}/users
     [HttpPost("conversations/{conversationId}/users")]
     public async Task<IActionResult> AddUserToConversation(Guid conversationId, [FromBody] AddUserToConversationDto dto)
@@ -149,10 +213,12 @@ public class ChattingController : ControllerBase
     }
 
     // DELETE: api/Chatting/conversations/{conversationId}/users/{userId}
-    [HttpDelete("conversations/{conversationId}/users/{userId}")]
-    public async Task<IActionResult> RemoveUserFromConversation(Guid conversationId, string userId)
+    [HttpDelete("conversations/{conversationId}/users/{email}")]
+    public async Task<IActionResult> RemoveUserFromConversation(Guid conversationId, string email)
     {
-        await _conversationUserRepo.RemoveAsync(conversationId, userId);
+
+        var user = await _userRepo.GetUserByEmailAsync(email);
+        await _conversationUserRepo.RemoveAsync(conversationId, user.Id);
         return NoContent();
     }
 

@@ -9,6 +9,7 @@ namespace Domain.Entities.Users
     {
         [Required]
         public string? FullName { get; set; }
+        
         [Required]
         public DateTime CreatedOn { get; set; }
         [Required]
