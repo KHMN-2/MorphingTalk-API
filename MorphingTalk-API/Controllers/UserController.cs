@@ -1,5 +1,5 @@
-﻿using Application.Interfaces.Services.Authentication;
-using Application.Interfaces.Services.UserDto;
+﻿using Application.DTOs.UserDto;
+using Application.Interfaces.Services.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,7 +28,7 @@ namespace MorphingTalk_API.Controllers
         [Authorize]
         public async Task<IActionResult> GetUserById()
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            string userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
             var user = await _userService.GetUserByIdAsync(userId);
             if (user == null)
@@ -44,20 +44,9 @@ namespace MorphingTalk_API.Controllers
                 NativeLanguage = user.NativeLanguage,
                 AboutStatus = user.AboutStatus,
                 Gender = user.Gender,
-                ProfilePicturePath = user.ProfilePicturePath
+                ProfilePicturePath = user.ProfilePicturePath,
+                PastProfilePicturePath = user.PastProfilePicturePaths
             };
-            return Ok(user);
-        }
-
-        [HttpGet("GetUser")]
-        [Authorize]
-        public async Task<IActionResult> GetUser(string email)
-        {
-            var user = await _userService.GetUserByEmailAsync(email);
-            if (user == null)
-            {
-                return NotFound();
-            }
             return Ok(user);
         }
     }

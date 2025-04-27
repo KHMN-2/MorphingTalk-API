@@ -25,6 +25,6 @@ namespace Domain.Entities.Users
         public string AboutStatus { get; set; }
         public string ProfilePicturePath { get; set; }
 
-        public ICollection<string> PastProfilePicturePaths { get; set; }
+        public ICollection<string>? PastProfilePicturePaths { get; set; }
     }
 }

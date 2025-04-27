@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces.Services.UserDto
+namespace Application.DTOs.UserDto
 {
     public class UserDto
     {
@@ -15,6 +15,7 @@ namespace Application.Interfaces.Services.UserDto
         public string NativeLanguage { get; set; }
         public string AboutStatus { get; set; }
         public string ProfilePicturePath { get; set; }
+        public ICollection<string> PastProfilePicturePath { get; set; }
         public bool? IsFirstLogin { get; set; }
 
     }

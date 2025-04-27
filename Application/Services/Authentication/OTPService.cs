@@ -25,19 +25,30 @@ namespace Application.Services.Authentication
             _tokenService = tokenService;
         }
 
-        public string? GetOTP(string email)
+        public enum OTPFor
         {
-            _memoryCache.TryGetValue(email, out string? otp);
+            VerifyEmail,
+            ResetPassword,
+            ChangeEmail
+        }
+        public class OTP
+        {
+            public string OTPValue { get; set; }
+            public OTPFor OTPType { get; set; }
+        }
+        public OTP? GetOTP(string email)
+        {
+            _memoryCache.TryGetValue(email, out OTP? otp);
             return otp;
         }
 
-        public void SaveOTP(string email, string otp)
+        public void SaveOTP(string email, OTP otp)
         {
             var expirationTime = DateTimeOffset.UtcNow.AddMinutes(5);
             _memoryCache.Set(email, otp, expirationTime);
         }
 
-        public async Task SendOTP(string email)
+        public async Task SendOTPToVerfiyEmail(string email)
         {
             var otp = new Random().Next(100000, 999999).ToString();
 
@@ -48,17 +59,15 @@ namespace Application.Services.Authentication
             await _emailService.SendEmailAsync(email, subject, body);
 
             // Save OTP
-            SaveOTP(email, otp);
+            SaveOTP(email, new OTP
+            {
+                OTPValue = otp,
+                OTPType = OTPFor.VerifyEmail
+            });
         }
 
-        public async Task<bool> SendOTPToResetPassword(string email)
+        public async Task<bool> SendOTPToResetPassword(User user)
         {
-            var user = await _userManager.FindByEmailAsync(email);
-            if (user == null)
-            {
-                throw new UnauthorizedAccessException("Invalid email");
-            }
-
             var otp = new Random().Next(100000, 999999).ToString();
 
             // Send verification email
@@ -118,9 +127,14 @@ namespace Application.Services.Authentication
         </body>
         </html>";
 
-            await _emailService.SendEmailAsync(email, subject, body);
-            SaveOTP(email, otp);
-
+            await _emailService.SendEmailAsync(user.Email, subject, body);
+            SaveOTP(user.Email, new OTP
+            {
+                OTPValue = otp,
+                OTPType = OTPFor.ResetPassword
+            });
+            var test = GetOTP(user.Email);
+            
             return true;
         }
 
@@ -192,21 +206,24 @@ namespace Application.Services.Authentication
         </html>";
 
             await _emailService.SendEmailAsync(newEmail, subject, body);
-            SaveOTP(newEmail, otp);
+            SaveOTP(newEmail, new OTP {
+                OTPType = OTPFor.ChangeEmail,
+                OTPValue = otp
+            });
 
             return true;
         }
 
-        public bool VerifyOTP(string email, string otp)
+        public bool VerifyOTP(string email, OTP otp)
         {
-            string? originalOTP = GetOTP(email);
+            OTP? originalOTP = GetOTP(email);
 
             if (originalOTP == null)
             {
                 return false;
             }
 
-            if (otp == originalOTP)
+            if (otp.OTPValue == originalOTP.OTPValue && otp.OTPType == originalOTP.OTPType)
             {
                 return true;
             }

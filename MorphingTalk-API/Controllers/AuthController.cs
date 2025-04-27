@@ -5,6 +5,8 @@ using MorphingTalk_API.DTOs;
 using MorphingTalk_API.DTOs.Auth;
 using Application.Interfaces.Services.Authentication;
 using Application.Services.Authentication;
+using static Application.Services.Authentication.OTPService;
+using Application.DTOs.Auth;
 
 namespace MorphingTalk_API.Controllers
 {
@@ -14,9 +16,11 @@ namespace MorphingTalk_API.Controllers
     {
 
         private readonly IAuthService _authService;
+        private readonly UserManager<User> _userManager;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, UserManager<User> userManager)
         {
+            this._userManager = userManager;
             this._authService = authService;
         }
 
@@ -37,8 +41,13 @@ namespace MorphingTalk_API.Controllers
                 FullName = model.FullName,
                 CreatedOn = DateTime.Now,
                 LastUpdatedOn = DateTime.Now,
+                Gender = model.gender,
+                NativeLanguage = model.nativeLanguage,
+                AboutStatus = model.aboutStatus,
+                ProfilePicturePath = model.profilePicturePath,
                 IsDeactivated = false,
-                IsFirstLogin = true
+                IsFirstLogin = true,
+                PastProfilePicturePaths = [model.profilePicturePath]
             };
 
             try
@@ -51,7 +60,8 @@ namespace MorphingTalk_API.Controllers
                     Token = token
                 });
             }
-            catch(Exception e) {
+            catch (Exception e)
+            {
                 return BadRequest(new AuthResponseDto
                 {
                     Success = false,
@@ -81,7 +91,8 @@ namespace MorphingTalk_API.Controllers
                 });
 
             }
-            catch (Exception e) {
+            catch (Exception e)
+            {
                 return Unauthorized(new AuthResponseDto
                 {
                     Success = false,
@@ -112,15 +123,20 @@ namespace MorphingTalk_API.Controllers
             }
         }
 
+
         [HttpPost("VerifyOTP")]
         public async Task<IActionResult> VerifyOTP(OTPDto OTPDto)
         {
             try
             {
-                string token = await _authService.VerifyOTP(OTPDto.email, OTPDto.OTP);
+                string token = await _authService.VerifyOTP(OTPDto.email, new OTP
+                {
+                    OTPValue = OTPDto.OTP,
+                    OTPType = OTPFor.VerifyEmail
+                });
                 if (token != null)
                 {
-                  
+
                     return Ok(new AuthResponseDto
                     {
                         Success = true,
@@ -134,6 +150,155 @@ namespace MorphingTalk_API.Controllers
                         Success = false,
                         Message = "Wrong or expired OTP"
                     });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new AuthResponseDto
+                {
+                    Success = false,
+                    Message = e.Message
+                });
+            }
+        }
+        [HttpPost("CheckAccount")]
+        public async Task<IActionResult> CheckAccount(string email)
+        {
+            try
+            {
+                var user = await _userManager.FindByEmailAsync(email);
+                if (user == null)
+                {
+                    return BadRequest(new AuthResponseDto
+                    {
+                        Success = false,
+                        Message = "User not found"
+                    });
+                }
+                if (user.EmailConfirmed)
+                {
+                    return Ok(new AuthResponseDto
+                    {
+                        Success = true,
+                        Message = "User exists and is confirmed"
+                    });
+                }
+                else
+                {
+                    return Ok(new AuthResponseDto
+                    {
+                        Success = true,
+                        Message = "User exists but is not confirmed"
+                    });
+                }
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new AuthResponseDto
+                {
+                    Success = false,
+                    Message = e.Message
+                });
+            }
+        }
+
+        [HttpGet("ForgetEmail")]
+        public async Task<IActionResult> ForgetEmail(string email)
+        {
+            try
+            {
+                var user = await _userManager.FindByEmailAsync(email);
+                if (user == null)
+                {
+                    return BadRequest(new AuthResponseDto
+                    {
+                        Success = false,
+                        Message = "User not found"
+                    });
+                }
+                await _authService.ForgetPassword(user);
+
+                return Ok(new AuthResponseDto
+                {
+                    Success = true,
+                    Message = "OTP sent successfully"
+                });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new AuthResponseDto
+                {
+                    Success = false,
+                    Message = e.Message
+                });
+            }
+        }
+
+
+
+
+        [HttpPost("VerifyOTPToForgetEmail")]
+        public async Task<IActionResult> VerifyOTPToForgetEmail(OTPDto OTPDto)
+        {
+            try
+            {
+                string token = await _authService.VerifyOTP(OTPDto.email, new OTP
+                {
+                    OTPValue = OTPDto.OTP,
+                    OTPType = OTPFor.ResetPassword
+                });
+                if (token != null)
+                {
+
+                    return Ok(new AuthResponseDto
+                    {
+                        Success = true,
+                        Message = "Correct OTP",
+                        Token = token
+                    });
+                }
+                else
+                    return BadRequest(new AuthResponseDto
+                    {
+                        Success = false,
+                        Message = "Wrong or expired OTP"
+                    });
+            }
+            catch (Exception e)
+            {
+                return BadRequest(new AuthResponseDto
+                {
+                    Success = false,
+                    Message = e.Message
+                });
+            }
+        }
+        [HttpPost("ResetPassword")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordDto model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new AuthResponseDto
+                {
+                    Success = false,
+                    Message = "Invalid password reset details"
+                });
+            try
+            {
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                if (user == null)
+                {
+                    return BadRequest(new AuthResponseDto
+                    {
+                        Success = false,
+                        Message = "User not found"
+                    });
+                }
+
+                var result = await _authService.ResetPassword(user, model.NewPassword, model.Token);
+                return Ok(new AuthResponseDto
+                {
+                    Success = true,
+                    Message = "Password reset successfully"
+                });
             }
             catch (Exception e)
             {
