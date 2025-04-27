@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using MorphingTalk_API.DTOs;
 using MorphingTalk_API.DTOs.Auth;
 using Application.Interfaces.Services.Authentication;
+using Application.Services.Authentication;
 
 namespace MorphingTalk_API.Controllers
 {
@@ -116,12 +117,17 @@ namespace MorphingTalk_API.Controllers
         {
             try
             {
-                if (await _authService.VerifyOTP(OTPDto.email, OTPDto.OTP))
+                string token = await _authService.VerifyOTP(OTPDto.email, OTPDto.OTP);
+                if (token != null)
+                {
+                  
                     return Ok(new AuthResponseDto
                     {
                         Success = true,
-                        Message = "Email confirmed"
+                        Message = "Email confirmed",
+                        Token = token
                     });
+                }
                 else
                     return BadRequest(new AuthResponseDto
                     {

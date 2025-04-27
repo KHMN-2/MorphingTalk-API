@@ -18,5 +18,13 @@ namespace Domain.Entities.Users
         public bool IsDeactivated { get; set; } = false;
         public bool? IsFirstLogin { get; set; } = null;
         public ICollection<ConversationUser> ConversationUsers { get; set; }
+
+
+        public string Gender { get; set; }
+        public string NativeLanguage { get; set; }
+        public string AboutStatus { get; set; }
+        public string ProfilePicturePath { get; set; }
+
+        public ICollection<string> PastProfilePicturePaths { get; set; }
     }
 }

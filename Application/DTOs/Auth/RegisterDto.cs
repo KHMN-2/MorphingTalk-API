@@ -14,5 +14,20 @@ namespace MorphingTalk_API.DTOs.Auth
 
         [Required]
         public string FullName { get; set; }
+
+        [Required]
+        public string gender { get; set; }
+
+        [Required]
+        public string nativeLanguage { get; set; }
+
+        //[Required]
+        public string aboutStatus { get; set; }
+
+        //[Required]
+        public string profilePicturePath { get; set; }
+
+
+
     }
 }

@@ -13,7 +13,7 @@ namespace Application.Interfaces.Services.Authentication
         public Task<string> Register(User user, string password);
         public Task<bool> ForgotPassword(string email);
         public Task<bool> SendOTP(string email);
-        public Task<bool> VerifyOTP(string email, string otp);
+        public Task<string?> VerifyOTP(string email, string otp);
 
     }
 }

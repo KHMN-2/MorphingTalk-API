@@ -37,15 +37,21 @@ namespace Application.Services.Authentication
             await _OTPService.SendOTP(email);
             return true;
         }
-        public async Task<bool> VerifyOTP(string email, string otp)
+        public async Task<string?> VerifyOTP(string email, string otp)
         {
             if (_OTPService.VerifyOTP(email, otp))
             {
+                var user = await _userManager.FindByEmailAsync(email);
+                if (user == null)
+                {
+                    throw new Exception("User not found");
+                }
                 await _userRepository.ConfirmEmail(email);
-                return true;
+                var token = _tokenService.GenerateJwtToken(user);
+                return token;
             }
 
-            return false;
+            return null;
         }
 
 
