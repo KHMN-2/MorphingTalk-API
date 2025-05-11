@@ -1,0 +1,49 @@
+// Application/Services/Chatting/SignalRChatNotificationService.cs
+using Application.DTOs.Chatting;
+using Application.Interfaces.Services.Chatting;
+using Domain.Entities.Chatting;
+using Microsoft.AspNetCore.SignalR;
+using System;
+using System.Threading.Tasks;
+
+
+namespace Application.Services.Chatting
+{
+    public class SignalRChatNotificationService : IChatNotificationService
+    {
+        private readonly IHubContext<ChatHub> _hubContext;
+
+        public SignalRChatNotificationService(IHubContext<ChatHub> hubContext)
+        {
+            _hubContext = hubContext;
+        }
+
+        public async Task NotifyMessageSent(Guid conversationId, Message message)
+        {
+            var messageDto = new MessageSummaryDto
+            {
+                Id = message.Id,
+                Type = message is TextMessage ? "text" : message is VoiceMessage ? "voice" : "unknown",
+                SenderUserId = message.ConversationUser?.UserId,
+                SenderDisplayName = message.ConversationUser?.User?.FullName,
+                Text = message is TextMessage tm ? tm.Content : null,
+                SentAt = message.SentAt
+            };
+
+            await _hubContext.Clients.Group(conversationId.ToString())
+                .SendAsync("ReceiveMessage", messageDto);
+        }
+
+        public async Task NotifyUserJoinedConversation(Guid conversationId, string userId, string userName)
+        {
+            await _hubContext.Clients.Group(conversationId.ToString())
+                .SendAsync("UserJoined", conversationId, userId, userName);
+        }
+
+        public async Task NotifyUserLeftConversation(Guid conversationId, string userId, string userName)
+        {
+            await _hubContext.Clients.Group(conversationId.ToString())
+                .SendAsync("UserLeft", conversationId, userId, userName);
+        }
+    }
+}

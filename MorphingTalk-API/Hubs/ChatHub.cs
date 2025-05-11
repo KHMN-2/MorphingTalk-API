@@ -1,73 +1,45 @@
-﻿using Application.Interfaces.Services.Chatting;
+﻿using Application.DTOs.Chatting;
+using Application.Interfaces.Services.Chatting;
 using Domain.Entities.Chatting;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using System;
+using System.Threading.Tasks;
 
-namespace MorphingTalk.API.Hubs
+namespace MorphingTalk_API.Hubs
 {
+    [Authorize]
     public class ChatHub : Hub
     {
-        
-        //public async Task JoinChat(UserConnection conn)
-        //{
-        //    await Clients.All.SendAsync("ReceiveMessage", "admin", $"{conn.Username} has joined");
-        //}
+        private readonly ILogger<ChatHub> _logger;
 
-        //public async Task JoinSpecificChatRoom(UserConnection conn)
-        //{
-        //    await Groups.AddToGroupAsync(Context.ConnectionId, conn.Chatroom);
-        //    await Clients.Group(conn.Chatroom).SendAsync("ReceiveMessage", "admin", $"{conn.Username} has joined {conn.Chatroom}");
-        //}
+        public ChatHub(ILogger<ChatHub> logger)
+        {
+            _logger = logger;
+        }
 
+        public async Task JoinConversation(string conversationId)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, conversationId);
+            _logger.LogInformation($"User {Context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value} joined conversation {conversationId}");
+        }
 
+        public async Task LeaveConversation(string conversationId)
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, conversationId);
+            _logger.LogInformation($"User {Context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value} left conversation {conversationId}");
+        }
 
-        //private readonly IMessageService _messageService;
-        //private readonly ILogger<ChatHub> _logger;
+        public override async Task OnConnectedAsync()
+        {
+            _logger.LogInformation($"Client connected: {Context.ConnectionId}, User: {Context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value}");
+            await base.OnConnectedAsync();
+        }
 
-        //public ChatHub(IMessageService messageService, ILogger<ChatHub> logger)
-        //{
-        //    _messageService = messageService;
-        //    _logger = logger;
-        //}
-
-        //public async Task SendTextMessage(string content)
-        //{
-        //    var message = new TextMessage
-        //    {
-        //        Id = Guid.NewGuid(),
-        //        SenderId = Context.ConnectionId,
-        //        Timestamp = DateTime.UtcNow,
-        //        Content = content
-        //    };
-
-        //    await _messageService.ProcessMessageAsync(message);
-        //    await Clients.All.SendAsync("ReceiveMessage", message);
-        //}
-
-        //public async Task SendVoiceMessage(string voiceUrl, int duration)
-        //{
-        //    var message = new VoiceMessage
-        //    {
-        //        Id = Guid.NewGuid(),
-        //        SenderId = Context.ConnectionId,
-        //        Timestamp = DateTime.UtcNow,
-        //        VoiceUrl = voiceUrl,
-        //        Duration = duration
-        //    };
-
-        //    await _messageService.ProcessMessageAsync(message);
-        //    await Clients.All.SendAsync("ReceiveMessage", message);
-        //}
-
-        //public override async Task OnConnectedAsync()
-        //{
-        //    _logger.LogInformation($"Client connected: {Context.ConnectionId}");
-        //    await base.OnConnectedAsync();
-        //}
-
-        //public override async Task OnDisconnectedAsync(Exception exception)
-        //{
-        //    _logger.LogInformation($"Client disconnected: {Context.ConnectionId}");
-        //    await base.OnDisconnectedAsync(exception);
-        //}
+        public override async Task OnDisconnectedAsync(Exception exception)
+        {
+            _logger.LogInformation($"Client disconnected: {Context.ConnectionId}, User: {Context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value}");
+            await base.OnDisconnectedAsync(exception);
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Application.Interfaces.Services.Authentication;
 using Domain.Entities.Users;
@@ -12,64 +13,81 @@ namespace Application.Services.Authentication
     public class TokenService : ITokenService
     {
         private readonly IConfiguration _configuration;
-        private readonly SymmetricSecurityKey _key;
         private readonly UserManager<User> _userManager;
+        private readonly SymmetricSecurityKey _signingKey;
+        private readonly JwtSecurityTokenHandler _tokenHandler;
+
         public TokenService(IConfiguration configuration, UserManager<User> userManager)
         {
             _configuration = configuration;
             _userManager = userManager;
-            _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:SigningKey"]));
+            _tokenHandler = new JwtSecurityTokenHandler();
+            _signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:SigningKey"]));
         }
 
-        public string GenerateJwtToken(User user)
+        public async Task<string> GenerateJwtToken(User user)
         {
             var jwtSettings = _configuration.GetSection("JWT");
-            var key = Encoding.ASCII.GetBytes(jwtSettings["signingKey"]);
+            var roles = await _userManager.GetRolesAsync(user);
 
-            var tokenHandler = new JwtSecurityTokenHandler();
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.NameId, user.Id),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+
+            claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new[]
-                {
-                    new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-                    new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-                }),
-                Expires = DateTime.UtcNow.AddDays(7),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddHours(1),
+                SigningCredentials = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256Signature),
                 Issuer = jwtSettings["Issuer"],
                 Audience = jwtSettings["Audience"]
             };
 
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+            var token = _tokenHandler.CreateToken(tokenDescriptor);
+            return _tokenHandler.WriteToken(token);
         }
 
         public async Task<User> GetUserFromToken(string token)
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_configuration["JWT:SigningKey"]);
-            tokenHandler.ValidateToken(token, new TokenValidationParameters
+            var validationParameters = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(key),
+                IssuerSigningKey = _signingKey,
                 ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidIssuer = _configuration["JWT:Issuer"],
                 ValidAudience = _configuration["JWT:Audience"],
                 ClockSkew = TimeSpan.Zero
-            }, out SecurityToken validatedToken);
+            };
+            var principal = _tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+            var emailClaim = principal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email);
 
-            var jwtToken = (JwtSecurityToken)validatedToken;
-            var username = jwtToken.Claims.First(x => x.Type == JwtRegisteredClaimNames.UniqueName).Value;
-            var user = await _userManager.FindByNameAsync(username);
+            if (emailClaim == null)
+                throw new UnauthorizedAccessException("Email claim not found in the token.");
+
+            var email = emailClaim.Value;
+
+            // Find the user by email
+            var user = await _userManager.FindByEmailAsync(email);
 
             if (user == null)
-            {
-                throw new UnauthorizedAccessException("Invalid token or user not found");
-            }
+                throw new UnauthorizedAccessException("Invalid token or user not found.");
+
             return user;
         }
-    }
 
+        public Task<string> GenerateRefreshToken()
+        {
+            var randomBytes = new byte[64];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomBytes);
+            return Task.FromResult(Convert.ToBase64String(randomBytes));
+        }
+
+    }
 }

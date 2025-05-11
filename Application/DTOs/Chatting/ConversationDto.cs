@@ -1,7 +1,8 @@
 ﻿using Application.DTOs.Chatting;
 using Domain.Entities.Chatting;
+using MorphingTalk_API.DTOs.Chatting;
 
-namespace MorphingTalk_API.DTOs.Chatting
+namespace Application.DTOs.Chatting
 {
     public class ConversationDto
     {
@@ -12,6 +13,7 @@ namespace MorphingTalk_API.DTOs.Chatting
         public ICollection<ConversationUserDto> Users { get; set; }
         public MessageSummaryDto LastMessage { get; set; }
         // Add more fields as needed (e.g., Conversation Icon, Admin, etc.)
+        public ConversationUserDto LoggedInConversationUser { get; set; }
     }
     public class ConversationListItemDto
     {

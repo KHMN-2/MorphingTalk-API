@@ -16,7 +16,7 @@ namespace Domain.Entities.Chatting
     {
         public Guid Id { get; set; }
         public MessageType Type { get; }
-        public  MessageStatus Status { get; set; }
+        public MessageStatus Status { get; set; }
         public DateTime SentAt { get; set; }
         public Guid ConversationUserId { get; set; }
         public ConversationUser ConversationUser { get; set; }

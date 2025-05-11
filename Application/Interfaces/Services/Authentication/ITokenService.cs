@@ -4,7 +4,8 @@ namespace Application.Interfaces.Services.Authentication
 {
     public interface ITokenService
     {
-        string GenerateJwtToken(User user);
+        Task<string> GenerateJwtToken(User user);
+        Task<string> GenerateRefreshToken();
         Task<User> GetUserFromToken(string token);
     }
 }

@@ -11,7 +11,7 @@ using Domain.Entities.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using MorphingTalk_API.Extensions;
-using MorphingTalk.API.Hubs;
+using MorphingTalk_API.Hubs;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -48,6 +48,7 @@ app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseStaticFiles();
 
 app.MapControllers();
 app.MapHub<ChatHub>("/chathub");

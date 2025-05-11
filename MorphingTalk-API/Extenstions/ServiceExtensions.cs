@@ -15,8 +15,10 @@ using Application.Services.Authentication;
 using Application.Interfaces.Services.Authentication;
 using Application.Interfaces.Services.Chatting;
 using Application.Services.Chatting;
-using MorphingTalk.API.Hubs;
+using MorphingTalk_API.Hubs;
 using Application.Automapper;
+using Application.Interfaces.Services.FileService;
+using Application.Services.FileService;
 
 namespace MorphingTalk_API.Extensions
 {
@@ -35,13 +37,18 @@ namespace MorphingTalk_API.Extensions
             services.AddScoped<IAuthService, AuthService>();
             services.AddMemoryCache();
 			services.AddSignalR();
-            //services.AddScoped<IMessageHandler, VoiceMessageHandler>();
-            //services.AddScoped<IMessageHandler, TextMessageHandler>();
+            services.AddScoped<IMessageHandler, VoiceMessageHandler>();
+            services.AddScoped<IMessageHandler, TextMessageHandler>();
             services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<IConversationRepository, ConversationRepository>();
             services.AddScoped<IConversationUserRepository, ConversationUserRepository>();
             services.AddScoped<IMessageRepository, MessageRepository>();
             services.AddScoped<IFriendshipRepository, FriendshipRepository>();
+            services.AddScoped<IChatNotificationService, SignalRChatNotificationService>();
+
+            services.AddScoped<IFileValidator, FileValidator>();
+            services.AddScoped<IFilePathProvider, FilePathProvider>();
+            services.AddScoped<IFileStorageService, FileStorageService>();
 
 
             services.AddIdentity<User, IdentityRole>(options =>

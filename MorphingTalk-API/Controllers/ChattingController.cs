@@ -1,5 +1,6 @@
 ﻿using Application.DTOs.Chatting;
 using Application.Interfaces.Repositories;
+using Application.Interfaces.Services.Chatting;
 using Domain.Entities.Chatting;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,17 +17,23 @@ public class ChattingController : ControllerBase
     private readonly IConversationUserRepository _conversationUserRepo;
     private readonly IMessageRepository _messageRepo;
     private readonly IUserRepository _userRepo;
+    private readonly IMessageService _messageService;
+    private readonly IChatNotificationService _chatNotificationService;
 
     public ChattingController(
         IConversationRepository conversationRepo,
         IConversationUserRepository conversationUserRepo,
         IUserRepository userRepository,
-        IMessageRepository messageRepo)
+        IMessageRepository messageRepo,
+        IMessageService messageService,
+        IChatNotificationService chatNotificationService)
     {
         _conversationRepo = conversationRepo;
         _conversationUserRepo = conversationUserRepo;
         _messageRepo = messageRepo;
         _userRepo = userRepository;
+        _messageService = messageService;
+        _chatNotificationService = chatNotificationService;
     }
 
     // GET: api/Chatting/conversations
@@ -76,6 +83,7 @@ public class ChattingController : ControllerBase
     [HttpGet("conversations/{conversationId}")]
     public async Task<IActionResult> GetConversation(Guid conversationId)
     {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         var conversation = await _conversationRepo.GetByIdAsync(conversationId);
         if (conversation == null)
             return NotFound();
@@ -92,6 +100,14 @@ public class ChattingController : ControllerBase
             Name = name,
             Type = conversation.Type,
             CreatedAt = conversation.CreatedAt,
+            LoggedInConversationUser = conversation.ConversationUsers?
+            .Where(cu => cu.UserId == userId)
+            .Select(cu => new ConversationUserDto
+            {
+                ConversationUserId = cu.Id,
+                UserId = cu.UserId,
+                DisplayName = cu.User?.FullName,
+            }).FirstOrDefault(),
             Users = conversation.ConversationUsers?.Select(cu => new ConversationUserDto
             {
                 UserId = cu.UserId,
@@ -209,15 +225,31 @@ public class ChattingController : ControllerBase
             UserId = dto.UserId
         };
         await _conversationUserRepo.AddAsync(cu);
+
+        // Get user details for notification
+        var user = await _userRepo.GetUserByIdAsync(dto.UserId);
+
+        // Notify other users in the conversation
+        await _chatNotificationService.NotifyUserJoinedConversation(
+            conversationId,
+            dto.UserId,
+            user?.FullName ?? "Unknown User");
+
         return Ok();
     }
 
-    // DELETE: api/Chatting/conversations/{conversationId}/users/{userId}
+    // DELETE: api/Chatting/conversations/{conversationId}/users/{email}
     [HttpDelete("conversations/{conversationId}/users/{email}")]
     public async Task<IActionResult> RemoveUserFromConversation(Guid conversationId, string email)
     {
 
         var user = await _userRepo.GetUserByEmailAsync(email);
+        // Notify before removal to ensure user data is still available
+        await _chatNotificationService.NotifyUserLeftConversation(
+            conversationId,
+            user.Id,
+            user.FullName ?? "Unknown User");
+
         await _conversationUserRepo.RemoveAsync(conversationId, user.Id);
         return NoContent();
     }
@@ -242,58 +274,14 @@ public class ChattingController : ControllerBase
     public async Task<IActionResult> SendMessage(Guid conversationId, [FromBody] SendMessageDto dto)
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        var cu = await _conversationUserRepo.GetByIdsAsync(conversationId, userId);
+        try{
 
-        if (cu == null)
-            return Forbid();
+            return Ok(await _messageService.ProcessMessageAsync(dto, conversationId, userId));
 
-        Message message;
-        if (dto.Type == "text")
-        {
-            if (string.IsNullOrWhiteSpace(dto.Text))
-                return BadRequest("Text is required for text messages.");
+        }  catch (Exception ex) { 
 
-            message = new TextMessage
-            {
-                ConversationId = conversationId,
-                ConversationUserId = cu.Id,
-                SentAt = DateTime.UtcNow,
-                Content = dto.Text
-            };
-        }
-        else if (dto.Type == "voice")
-        {
-            if (string.IsNullOrWhiteSpace(dto.VoiceFileUrl))
-                return BadRequest("VoiceFileUrl is required for voice messages.");
-
-            message = new VoiceMessage
-            {
-                ConversationId = conversationId,
-                ConversationUserId = cu.Id,
-                SentAt = DateTime.UtcNow,
-                VoiceUrl = dto.VoiceFileUrl,
-                VoiceDuration = dto.DurationSeconds ?? 0
-            };
-        }
-        else
-        {
             return BadRequest("Unsupported message type.");
         }
-
-        await _messageRepo.AddAsync(message);
-
-        // Optionally map back to a MessageSummaryDto for response
-        var result = new MessageSummaryDto
-        {
-            Id = message.Id,
-            Type = dto.Type,
-            SenderUserId = userId,
-            SenderDisplayName = cu.User?.FullName,
-            Text = dto.Type == "text" ? dto.Text : null,
-            SentAt = message.SentAt
-        };
-
-        return Ok(result);
     }
 
     // GET: api/Chatting/conversations/{conversationId}/messages

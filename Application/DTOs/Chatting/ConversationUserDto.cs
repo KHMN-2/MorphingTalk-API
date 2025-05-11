@@ -8,6 +8,7 @@ namespace Application.DTOs.Chatting
 {
     public class ConversationUserDto
     {
+        public Guid? ConversationUserId { get; set; }
         public string UserId { get; set; }
         public string DisplayName { get; set; }
     }

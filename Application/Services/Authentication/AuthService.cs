@@ -70,7 +70,7 @@ namespace Application.Services.Authentication
                 if (otp.OTPType == OTPFor.VerifyEmail)
                 {
                     await _userRepository.ConfirmEmail(email);
-                    token = _tokenService.GenerateJwtToken(user);
+                    token = await _tokenService.GenerateJwtToken(user);
                 }else if (otp.OTPType == OTPFor.ResetPassword)
                 {
                     token = await _userManager.GeneratePasswordResetTokenAsync(user);
@@ -91,7 +91,7 @@ namespace Application.Services.Authentication
                 {
                     throw new Exception("Email not confirmed");
                 }
-                var token = _tokenService.GenerateJwtToken(user);
+                var token = await _tokenService.GenerateJwtToken(user);
                 return token;
             }
             throw new Exception("Invalid login details");

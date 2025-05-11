@@ -1,4 +1,6 @@
-﻿namespace MorphingTalk_API.DTOs.Chatting
+﻿using Domain.Entities.Chatting;
+
+namespace Application.DTOs.Chatting
 {
     public class MessageDto
     {
@@ -18,7 +20,8 @@
     }
     public class SendMessageDto
     {
-        public string Type { get; set; } // "text" or "voice"
+        public MessageType Type { get; set; } // "text" or "voice"
+        public Guid SenderConversationUserId { get; set; }
         public string Text { get; set; } // Required for "text"
         public string VoiceFileUrl { get; set; } // Required for "voice"
         public double? DurationSeconds { get; set; } // Optional for "voice"
