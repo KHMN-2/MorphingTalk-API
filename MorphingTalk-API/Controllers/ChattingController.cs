@@ -68,10 +68,13 @@ public class ChattingController : ControllerBase
                     {
                         Id = m.Id,
                         Type = m is TextMessage ? "text" : m is VoiceMessage ? "voice" : "unknown",
-                        SenderUserId = m.ConversationUser?.UserId,
+                        SenderId = m.ConversationUser?.UserId,
                         SenderDisplayName = m.ConversationUser?.User?.FullName,
                         Text = m is TextMessage tm ? tm.Content : null,
-                        SentAt = m.SentAt
+                        SentAt = m.SentAt,
+                        MessageStatus = m.Status.ToString(),
+
+
                     }).FirstOrDefault()
             };
             }).ToList();

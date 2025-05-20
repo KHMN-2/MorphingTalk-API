@@ -10,6 +10,9 @@ namespace Application.DTOs.Friendship
     {
         public string UserId { get; set; }
         public string Email { get; set; }
-        public string Username { get; set; }
+        public string Name { get; set; }
+        public bool IsOnline { get; set; } // Optional, if needed
+        public DateTime LastSeen { get; set; } // Optional, if needed
+        public string ProfileImagePath { get; set; } // Optional, if needed
     }
 }

@@ -26,7 +26,7 @@ namespace MorphingTalk_API.Controllers
 
         [HttpGet("GetLoggedInUser")]
         [Authorize]
-        public async Task<IActionResult> GetUserById()
+        public async Task<IActionResult> GetLoggedInUser()
         {
             string userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
@@ -44,10 +44,27 @@ namespace MorphingTalk_API.Controllers
                 NativeLanguage = user.NativeLanguage,
                 AboutStatus = user.AboutStatus,
                 Gender = user.Gender,
-                ProfilePicturePath = user.ProfilePicturePath,
-                PastProfilePicturePath = user.PastProfilePicturePaths
+                ProfilePicPath = user.ProfilePicturePath,
+                PastProfilePicsPath = user.PastProfilePicturePaths
             };
             return Ok(user);
+        }
+
+        [HttpGet("GetUserById/{id}")]
+        public async Task<IActionResult> GetUserById(string id)
+        {
+            var user = await _userService.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok(new UserDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Name = user.FullName,
+
+            });
         }
     }
 }

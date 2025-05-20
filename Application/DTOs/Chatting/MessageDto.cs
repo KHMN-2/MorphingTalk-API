@@ -13,10 +13,11 @@ namespace Application.DTOs.Chatting
     {
         public Guid Id { get; set; }
         public string Type { get; set; } // e.g. "text", "voice"
-        public string SenderUserId { get; set; }
+        public string SenderId { get; set; }
         public string SenderDisplayName { get; set; }
         public string Text { get; set; }
         public DateTime SentAt { get; set; }
+        public string MessageStatus { get; set; } // e.g. "sent", "delivered", "read"
 
         public string ConversationId { get; set; } // Optional, if needed
     }
@@ -27,5 +28,6 @@ namespace Application.DTOs.Chatting
         public string Text { get; set; } // Required for "text"
         public string VoiceFileUrl { get; set; } // Required for "voice"
         public double? DurationSeconds { get; set; } // Optional for "voice"
+        public bool NeedTranslation { get; set; }
     }
 }

@@ -14,8 +14,8 @@ namespace Application.DTOs.UserDto
         public string Gender { get; set; }
         public string NativeLanguage { get; set; }
         public string AboutStatus { get; set; }
-        public string ProfilePicturePath { get; set; }
-        public ICollection<string> PastProfilePicturePath { get; set; }
+        public string ProfilePicPath { get; set; }
+        public ICollection<string> PastProfilePicsPath { get; set; }
         public bool? IsFirstLogin { get; set; }
 
     }

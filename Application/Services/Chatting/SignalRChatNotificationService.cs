@@ -26,12 +26,12 @@ namespace Application.Services.Chatting
             {
                 Id = message.Id,
                 Type = message is TextMessage ? "text" : message is VoiceMessage ? "voice" : "unknown",
-                SenderUserId = message.ConversationUser?.UserId,
+                SenderId = message.ConversationUser?.UserId,
                 SenderDisplayName = message.ConversationUser?.User?.FullName,
                 Text = message is TextMessage tm ? tm.Content : null,
                 SentAt = message.SentAt,
-                ConversationId = message.ConversationId.ToString()
-
+                ConversationId = message.ConversationId.ToString(),
+                MessageStatus = message.Status.ToString()
             };
 
             await _hubContext.Clients.Group(conversationId.ToString())

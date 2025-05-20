@@ -28,8 +28,11 @@ namespace MorphingTalk_API.Controllers
             var results = friends.Select(fr => new FriendshipDto
             {
                 UserId = fr.UserId1 == userId ? fr.UserId2 : fr.UserId1,
-                Username = fr.UserId1 == userId ? fr.User2?.FullName : fr.User1?.FullName,
+                Name = fr.UserId1 == userId ? fr.User2?.FullName : fr.User1?.FullName,
                 Email = fr.UserId1 == userId ? fr.User2?.Email : fr.User1?.Email,
+                IsOnline = true,
+                LastSeen = DateTime.UtcNow,
+                ProfileImagePath = fr.UserId1 == userId ? fr.User2?.ProfilePicturePath : fr.User1?.ProfilePicturePath
             }).ToList();
 
             return Ok(results);
