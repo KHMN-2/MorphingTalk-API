@@ -17,6 +17,8 @@ namespace Application.DTOs.Chatting
         public string SenderDisplayName { get; set; }
         public string Text { get; set; }
         public DateTime SentAt { get; set; }
+
+        public string ConversationId { get; set; } // Optional, if needed
     }
     public class SendMessageDto
     {

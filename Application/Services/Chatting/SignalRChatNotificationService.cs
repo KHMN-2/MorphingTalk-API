@@ -3,6 +3,8 @@ using Application.DTOs.Chatting;
 using Application.Interfaces.Services.Chatting;
 using Domain.Entities.Chatting;
 using Microsoft.AspNetCore.SignalR;
+using MorphingTalk_API.DTOs.Chatting;
+using MorphingTalk_API.Hubs;
 using System;
 using System.Threading.Tasks;
 
@@ -27,7 +29,9 @@ namespace Application.Services.Chatting
                 SenderUserId = message.ConversationUser?.UserId,
                 SenderDisplayName = message.ConversationUser?.User?.FullName,
                 Text = message is TextMessage tm ? tm.Content : null,
-                SentAt = message.SentAt
+                SentAt = message.SentAt,
+                ConversationId = message.ConversationId.ToString()
+
             };
 
             await _hubContext.Clients.Group(conversationId.ToString())
