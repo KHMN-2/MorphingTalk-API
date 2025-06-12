@@ -57,12 +57,11 @@ namespace MorphingTalk_API.Controllers
             if (user == null)
             {
                 return NotFound();
-            }
-            return Ok(new UserDto
+            }            return Ok(new UserDto
             {
                 Id = user.Id,
                 Email = user.Email,
-                Name = user.FullName,
+                FullName = user.FullName,
 
             });
         }

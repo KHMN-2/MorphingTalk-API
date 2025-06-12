@@ -118,12 +118,11 @@ public class ChattingController : ControllerBase
             }).ToList(),
             LastMessage = conversation.Messages?
                 .OrderByDescending(m => m.SentAt)
-                .Take(1)
-                .Select(m => new MessageSummaryDto
+                .Take(1)                .Select(m => new MessageSummaryDto
                 {
                     Id = m.Id,
                     Type = m is TextMessage ? "text" : m is VoiceMessage ? "voice" : "unknown",
-                    SenderUserId = m.ConversationUser?.UserId,
+                    SenderId = m.ConversationUser?.UserId,
                     SenderDisplayName = m.ConversationUser?.User?.FullName,
                     Text = m is TextMessage tm ? tm.Content : null,
                     SentAt = m.SentAt
@@ -291,13 +290,11 @@ public class ChattingController : ControllerBase
     [HttpGet("conversations/{conversationId}/messages")]
     public async Task<IActionResult> GetMessages(Guid conversationId, [FromQuery] int count = 50, [FromQuery] int skip = 0)
     {
-        var messages = await _messageRepo.GetMessagesForConversationAsync(conversationId, count, skip);
-
-        var result = messages.Select(m => new MessageSummaryDto
+        var messages = await _messageRepo.GetMessagesForConversationAsync(conversationId, count, skip);        var result = messages.Select(m => new MessageSummaryDto
         {
             Id = m.Id,
             Type = m is TextMessage ? "text" : m is VoiceMessage ? "voice" : "unknown",
-            SenderUserId = m.ConversationUser?.UserId,
+            SenderId = m.ConversationUser?.UserId,
             SenderDisplayName = m.ConversationUser?.User?.FullName,
             Text = m is TextMessage tm ? tm.Content : null,
             SentAt = m.SentAt
