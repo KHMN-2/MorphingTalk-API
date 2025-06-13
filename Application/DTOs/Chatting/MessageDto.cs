@@ -5,9 +5,9 @@ namespace Application.DTOs.Chatting
     public class MessageDto
     {
         public string Type { get; set; } // "text" or "voice"
-        public string Text { get; set; }
-        public string VoiceFileUrl { get; set; }
-        public double DurationSeconds { get; set; }
+        public string? Text { get; set; }
+        public string? VoiceFileUrl { get; set; }
+        public double? DurationSeconds { get; set; }
     }
     public class MessageSummaryDto
     {
