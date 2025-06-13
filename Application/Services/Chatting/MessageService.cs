@@ -20,19 +20,15 @@ namespace Application.Services.Chatting
         private readonly IConversationUserRepository _conversationUserRepo;
         private readonly IMessageRepository _messageRepository;
         private readonly IChatNotificationService _chatNotificationService;
-        private readonly IMemoryCache _memoryCache;
-
-
-        public MessageService(IEnumerable<IMessageHandler> handlers, IConversationUserRepository conversationUserRepository, IMessageRepository messageRepository, IChatNotificationService chatNotificationService, IMemoryCache memoryCache)
+        private readonly IMemoryCache _memoryCache;        public MessageService(IEnumerable<IMessageHandler> handlers, IConversationUserRepository conversationUserRepository, IMessageRepository messageRepository, IChatNotificationService chatNotificationService, IMemoryCache memoryCache, ILogger<MessageService> logger)
         {
             _handlers = handlers;
             _conversationUserRepo = conversationUserRepository;
             _messageRepository = messageRepository;
             _chatNotificationService = chatNotificationService;
             _memoryCache = memoryCache;
-        }
-
-        public async Task<bool> ProcessMessageAsync(SendMessageDto message, Guid conversationId, string userId)
+            _logger = logger;
+        }        public async Task<bool> ProcessMessageAsync(SendMessageDto message, Guid conversationId, string userId)
         {
             var handler = _handlers.FirstOrDefault(h => h.CanHandle(message.Type));
             var cu = await _conversationUserRepo.GetByIdsAsync(conversationId, userId);
@@ -43,12 +39,15 @@ namespace Application.Services.Chatting
                 _logger.LogError($"No handler found for message type: {message.Type}");
                 throw new NotSupportedException($"Message type {message.Type} is not supported");
             }
+            
+            // Set the correct ConversationUser ID
+            message.SenderConversationUserId = cu.Id;
+            
             if (message.NeedTranslation)
             {
                 var cacheKey = $"{conversationId}_" + Guid.NewGuid();
               
                 _memoryCache.Set(cacheKey, message, TimeSpan.FromMinutes(30));
-                message.SenderConversationUserId = cu.Id;
 
                 return false; // Indicate that the message is being processed for translation
             }
