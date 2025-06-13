@@ -8,6 +8,8 @@ namespace Application.DTOs.Chatting
     {
         public Guid Id { get; set; }
         public string Name { get; set; }            // For group conversations (optional for direct)
+        public string? GroupImageUrl { get; set; }   // Optional for group conversations
+        public string? Description { get; set; }    // Optional for group conversations
         public ConversationType Type { get; set; }            // "group" or "direct"
         public DateTime CreatedAt { get; set; }
         public ICollection<ConversationUserDto> Users { get; set; }
@@ -25,7 +27,8 @@ namespace Application.DTOs.Chatting
 
     public class CreateConversationDto
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
+        public string? GroupImageUrl { get; set; }   // Optional for group conversations
         public ConversationType Type { get; set; } // "group" or "direct"
         public List<string> UserEmails { get; set; } // Initial user list (can include self)
     }

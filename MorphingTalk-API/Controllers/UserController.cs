@@ -1,5 +1,6 @@
 ﻿using Application.DTOs.UserDto;
 using Application.Interfaces.Services.Authentication;
+using Domain.Entities.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,8 +21,8 @@ namespace MorphingTalk_API.Controllers
         [HttpGet("GetAllUsers")]
         public async Task<IActionResult> GetAllUsers()
         {
-            var users = await _userService.GetAllUsersAsync();
-            return Ok(users);
+            var result = await _userService.GetAllUsersAsync();
+            return Ok(result);
         }
 
         [HttpGet("GetLoggedInUser")]
@@ -29,41 +30,15 @@ namespace MorphingTalk_API.Controllers
         public async Task<IActionResult> GetLoggedInUser()
         {
             string userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-
-            var user = await _userService.GetUserByIdAsync(userId);
-            if (user == null)
-            {
-                return NotFound();
-            }
-            var userDto = new UserDto
-            {
-                Id = user.Id,
-                Email = user.Email,
-                FullName = user.FullName,
-                IsFirstLogin = user.IsFirstLogin,
-                NativeLanguage = user.NativeLanguage,
-                AboutStatus = user.AboutStatus,
-                Gender = user.Gender,
-                ProfilePicPath = user.ProfilePicturePath,
-                PastProfilePicsPath = user.PastProfilePicturePaths
-            };
-            return Ok(user);
+            var result = await _userService.GetUserByIdAsync(userId);
+            return Ok(result);
         }
 
         [HttpGet("GetUserById/{id}")]
         public async Task<IActionResult> GetUserById(string id)
         {
-            var user = await _userService.GetUserByIdAsync(id);
-            if (user == null)
-            {
-                return NotFound();
-            }            return Ok(new UserDto
-            {
-                Id = user.Id,
-                Email = user.Email,
-                FullName = user.FullName,
-
-            });
+            var result = await _userService.GetUserByIdAsync(id);
+            return Ok(result);
         }
     }
 }

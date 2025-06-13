@@ -16,7 +16,9 @@ namespace Domain.Entities.Chatting
     {
         public Guid Id { get; set; }
         public ConversationType Type { get; set; }
-        public string Name { get; set; }
+        public string? Name { get; set; }
+        public string? GroupImageUrl { get; set; } // Optional for group conversations
+        public string? Description { get; set; } // Optional for group conversations
         public DateTime CreatedAt { get; set; }
         public DateTime LastActivityAt { get; set; }
 

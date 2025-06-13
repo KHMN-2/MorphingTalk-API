@@ -1,4 +1,5 @@
-﻿using Application.Interfaces.Services.FileService;
+﻿using Application.DTOs;
+using Application.Interfaces.Services.FileService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,13 +22,7 @@ namespace MorphingTalk_API.Controllers
         {
             var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
             var relativePath = await _fileStorageService.UploadDocumentAsync(file, token);
-            return new JsonResult(new
-            {
-                success = true,
-                status = StatusCodes.Status200OK,
-                message = "Added successfully",
-                data = relativePath
-            });
+            return Ok(new ResponseViewModel<string>(relativePath, "Added successfully", true, StatusCodes.Status200OK));
         }
 
         [HttpPost("image")]
@@ -37,13 +32,8 @@ namespace MorphingTalk_API.Controllers
 
             var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
             var relativePath = await _fileStorageService.UploadImageAsync(file, token);
-            return new JsonResult(new
-            {
-                success = true,
-                status = StatusCodes.Status200OK,
-                message = "Added successfully",
-                data = relativePath
-            });
+            return Ok(new ResponseViewModel<string>(relativePath, "Added successfully", true, StatusCodes.Status200OK));
+
         }
 
         [HttpPost("video")]
@@ -53,13 +43,7 @@ namespace MorphingTalk_API.Controllers
 
             var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
             var relativePath = await _fileStorageService.UploadVideoAsync(file, token);
-            return new JsonResult(new
-            {
-                success = true,
-                status = StatusCodes.Status200OK,
-                message = "Added successfully",
-                data = relativePath
-            });
+            return Ok(new ResponseViewModel<string>(relativePath, "Added successfully", true, StatusCodes.Status200OK));
         }
 
         [HttpPost("public/document")]
@@ -68,19 +52,19 @@ namespace MorphingTalk_API.Controllers
             try
             {
                 var relativePath = await _fileStorageService.UploadDocumentWithoutAuthAsync(file);
-                return Ok(new { RelativePath = relativePath });
+                return Ok(new ResponseViewModel<string>(relativePath, "Added successfully", true, StatusCodes.Status200OK));
             }
             catch (BadHttpRequestException ex)
             {
-                return BadRequest(ex.Message);
+                return Ok(new ResponseViewModel<string>(null, ex.Message, false, StatusCodes.Status400BadRequest));
             }
             catch (ArgumentNullException ex)
             {
-                return BadRequest(ex.Message);
+                return Ok(new ResponseViewModel<string>(null, ex.Message, false, StatusCodes.Status400BadRequest));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred while uploading the document.");
+                return StatusCode(500, new ResponseViewModel<string>(null, "An error occurred while uploading the document.", false, StatusCodes.Status500InternalServerError));
             }
         }
 
@@ -90,19 +74,19 @@ namespace MorphingTalk_API.Controllers
             try
             {
                 var relativePath = await _fileStorageService.UploadImageWithoutAuthAsync(file);
-                return Ok(new { RelativePath = relativePath });
+                return Ok(new ResponseViewModel<string>(relativePath, "Added successfully", true, StatusCodes.Status200OK));
             }
             catch (BadHttpRequestException ex)
             {
-                return BadRequest(ex.Message);
+                return Ok(new ResponseViewModel<string>(null, ex.Message, false, StatusCodes.Status400BadRequest));
             }
             catch (ArgumentNullException ex)
             {
-                return BadRequest(ex.Message);
+                return Ok(new ResponseViewModel<string>(null, ex.Message, false, StatusCodes.Status400BadRequest));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred while uploading the image.");
+                return StatusCode(500, new ResponseViewModel<string>(null, "An error occurred while uploading the document.", false, StatusCodes.Status500InternalServerError));
             }
         }
 
@@ -116,15 +100,15 @@ namespace MorphingTalk_API.Controllers
             }
             catch (BadHttpRequestException ex)
             {
-                return BadRequest(ex.Message);
+                return Ok(new ResponseViewModel<string>(null, ex.Message, false, StatusCodes.Status400BadRequest));
             }
             catch (ArgumentNullException ex)
             {
-                return BadRequest(ex.Message);
+                return Ok(new ResponseViewModel<string>(null, ex.Message, false, StatusCodes.Status400BadRequest));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred while uploading the video.");
+                return StatusCode(500, new ResponseViewModel<string>(null, "An error occurred while uploading the document.", false, StatusCodes.Status500InternalServerError));
             }
         }
 
@@ -141,7 +125,7 @@ namespace MorphingTalk_API.Controllers
                 {
                     return NoContent();
                 }
-                return StatusCode(500, "Failed to delete the file.");
+                return StatusCode(500, new ResponseViewModel<string>(null, "An error occurred while uploading the document.", false, StatusCodes.Status500InternalServerError));
             }
             catch (FileNotFoundException ex)
             {
@@ -149,7 +133,7 @@ namespace MorphingTalk_API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred while deleting the file.");
+                return StatusCode(500, new ResponseViewModel<string>(null, "An error occurred while uploading the document.", false, StatusCodes.Status500InternalServerError));
             }
         }
     }

@@ -42,7 +42,7 @@ namespace Application.Services.Authentication
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddHours(1),
+                Expires = DateTime.UtcNow.AddMonths(3),
                 SigningCredentials = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256Signature),
                 Issuer = jwtSettings["Issuer"],
                 Audience = jwtSettings["Audience"]

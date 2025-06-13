@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Application.DTOs;
+using Application.DTOs.UserDto;
 using Domain.Entities.Users;
 
 namespace Application.Interfaces.Services.Authentication
 {
     public interface IUserService
     {
-        public Task<User> GetUserByIdAsync(String? id);
-        public Task<User> GetUserByEmailAsync(string email);
-        public Task<List<User>> GetAllUsersAsync();
+        public Task<ResponseViewModel<UserDto>> GetUserByIdAsync(String? id);
+        public Task<ResponseViewModel<UserDto>> GetUserByEmailAsync(string email);
+        public Task<ResponseViewModel<List<UserDto>>> GetAllUsersAsync();
     }
 }
