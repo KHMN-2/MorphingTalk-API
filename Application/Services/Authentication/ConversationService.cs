@@ -48,6 +48,17 @@ namespace Application.Services.Authentication
                     CreatedAt = conversation.CreatedAt,
                     GroupImageUrl = conversation.GroupImageUrl,
                     Description = conversation.Description,
+                    LoggedInConversationUser = conversation.ConversationUsers?
+                .Where(cu => cu.UserId == userId)
+                .Select(cu => new ConversationUserDto
+                {
+                    ConversationUserId = cu.Id,
+                    UserId = cu.UserId,
+                    DisplayName = cu.User?.FullName,
+                    Role = cu.Role.ToString(),
+                    ProfileImagePath = cu.User?.ProfilePicturePath,
+                    bio = cu.User?.AboutStatus,
+                }).FirstOrDefault(),
                     Users = conversation.ConversationUsers?.Select(cu => new ConversationUserDto
                     {
                         ConversationUserId = cu.Id,
@@ -69,7 +80,8 @@ namespace Application.Services.Authentication
                             Text = m is TextMessage tm ? tm.Content : null,
                             SentAt = m.SentAt,
                             MessageStatus = m.Status.ToString(),
-                        }).FirstOrDefault()
+                        }).FirstOrDefault(),
+
                 };
             }).ToList();
 
@@ -104,6 +116,7 @@ namespace Application.Services.Authentication
                         Name = friendUser.FullName,
                         Type = existingConversation.Type,
                         CreatedAt = existingConversation.CreatedAt,
+
                         Users = existingConversation.ConversationUsers.Select(cu => new ConversationUserDto
                         {
                             ConversationUserId = cu.Id,
@@ -152,8 +165,19 @@ namespace Application.Services.Authentication
                 Name = created.Name,
                 Type = created.Type,
                 CreatedAt = created.CreatedAt,
-                Users = created.ConversationUsers.Select(cu => new ConversationUserDto
-                {   
+                LoggedInConversationUser = conversation.ConversationUsers?
+                .Where(cu => cu.UserId == creatorUserId)
+                .Select(cu => new ConversationUserDto
+                {
+                    ConversationUserId = cu.Id,
+                    UserId = cu.UserId,
+                    DisplayName = cu.User?.FullName,
+                    Role = cu.Role.ToString(),
+                    ProfileImagePath = cu.User?.ProfilePicturePath,
+                    bio = cu.User?.AboutStatus,
+                }).FirstOrDefault(),
+                Users = conversation.ConversationUsers?.Select(cu => new ConversationUserDto
+                {
                     ConversationUserId = cu.Id,
                     UserId = cu.UserId,
                     DisplayName = cu.User?.FullName,
@@ -204,6 +228,7 @@ namespace Application.Services.Authentication
                 }).FirstOrDefault(),
                 Users = conversation.ConversationUsers?.Select(cu => new ConversationUserDto
                 {
+                    ConversationUserId = cu.Id,
                     UserId = cu.UserId,
                     DisplayName = cu.User?.FullName,
                     Role = cu.Role.ToString(),
