@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Application.DTOs;
+using Application.DTOs.UserDto;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services.Authentication;
 using Domain.Entities.Users;
@@ -19,18 +21,65 @@ namespace Application.Services.Authentication
             _userRepository = userRepository;
         }
 
-        public Task<List<User>> GetAllUsersAsync()
+        public async Task<ResponseViewModel<List<UserDto>>> GetAllUsersAsync()
         {
-            return _userRepository.GetAllUsersAsync();
+            var users = await _userRepository.GetAllUsersAsync();
+            var userDtos = users.Select(user => new UserDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FullName = user.FullName,
+                IsFirstLogin = user.IsFirstLogin,
+                NativeLanguage = user.NativeLanguage,
+                AboutStatus = user.AboutStatus,
+                Gender = user.Gender,
+                ProfilePicPath = user.ProfilePicturePath,
+                PastProfilePicsPath = user.PastProfilePicturePaths
+            }).ToList();
+            return new ResponseViewModel<List<UserDto>>(userDtos, "Users retrieved successfully", true, 200);
         }
 
-        public Task<User> GetUserByIdAsync(string? id)
+        public async Task<ResponseViewModel<UserDto>> GetUserByIdAsync(string? id)
         {
-            return _userRepository.GetUserByIdAsync(id);
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return new ResponseViewModel<UserDto>(null, "User not found", false, 404);
+            }
+            var userDto = new UserDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FullName = user.FullName,
+                IsFirstLogin = user.IsFirstLogin,
+                NativeLanguage = user.NativeLanguage,
+                AboutStatus = user.AboutStatus,
+                Gender = user.Gender,
+                ProfilePicPath = user.ProfilePicturePath,
+                PastProfilePicsPath = user.PastProfilePicturePaths
+            };
+            return new ResponseViewModel<UserDto>(userDto, "User found", true, 200);
         }
-        public Task<User> GetUserByEmailAsync(string email)
+        public async Task<ResponseViewModel<UserDto>> GetUserByEmailAsync(string email)
         {
-            return _userRepository.GetUserByEmailAsync(email);
+            var user = await _userRepository.GetUserByEmailAsync(email);
+            if (user == null)
+            {
+                return new ResponseViewModel<UserDto>(null, "User not found", false, 404);
+            }
+            var userDto = new UserDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FullName = user.FullName,
+                IsFirstLogin = user.IsFirstLogin,
+                NativeLanguage = user.NativeLanguage,
+                AboutStatus = user.AboutStatus,
+                Gender = user.Gender,
+                ProfilePicPath = user.ProfilePicturePath,
+                PastProfilePicsPath = user.PastProfilePicturePaths
+            };
+            return new ResponseViewModel<UserDto>(userDto, "User found", true, 200);
         }
 
     }

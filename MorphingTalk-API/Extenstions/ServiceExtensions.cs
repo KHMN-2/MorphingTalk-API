@@ -19,6 +19,8 @@ using MorphingTalk_API.Hubs;
 using Application.Automapper;
 using Application.Interfaces.Services.FileService;
 using Application.Services.FileService;
+using Application.Interfaces.Services;
+using Application.Services;
 
 namespace MorphingTalk_API.Extensions
 {
@@ -45,6 +47,7 @@ namespace MorphingTalk_API.Extensions
             services.AddScoped<IMessageRepository, MessageRepository>();
             services.AddScoped<IFriendshipRepository, FriendshipRepository>();
             services.AddScoped<IChatNotificationService, SignalRChatNotificationService>();
+            services.AddScoped<IFriendshipService, FriendshipService>();
 
             services.AddScoped<IFileValidator, FileValidator>();
             services.AddScoped<IFilePathProvider, FilePathProvider>();
