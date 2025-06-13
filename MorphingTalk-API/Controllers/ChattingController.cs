@@ -170,4 +170,5 @@ public class ChattingController : ControllerBase
                 new ResponseViewModel<string>(null, "Message not found", false, StatusCodes.Status404NotFound));
         }
     }
+
 }

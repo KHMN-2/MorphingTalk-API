@@ -8,7 +8,8 @@ namespace Application.Interfaces.Services.Chatting
     public interface IChatNotificationService
     {
         Task NotifyMessageSent(Guid conversationId, Message message);
-        Task NotifyUserJoinedConversation(Guid conversationId, string userId, string userName);
-        Task NotifyUserLeftConversation(Guid conversationId, string userId, string userName);
+        Task NotifyUserJoinedConversation(Guid conversationId, string userId, string displayName);
+        Task NotifyUserLeftConversation(Guid conversationId, string userId, string displayName);
+        Task NotifyMessageTranslated(Guid conversationId, Guid translatedMessageId, string senderId, string targetLanguage);
     }
 }

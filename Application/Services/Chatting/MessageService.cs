@@ -50,24 +50,22 @@ namespace Application.Services.Chatting
                 _memoryCache.Set(cacheKey, message, TimeSpan.FromMinutes(30));
                 message.SenderConversationUserId = cu.Id;
 
+                return false; // Indicate that the message is being processed for translation
             }
 
             await handler.HandleMessageAsync(message, conversationId, userId);
+            
+            // Get the newly created message from repository to send notification
+            var messages = await _messageRepository.GetMessagesForConversationAsync(conversationId, 1, 0);
+            var latestMessage = messages.FirstOrDefault();
 
-            if(!message.NeedTranslation){
-                // Get the newly created message from repository to send notification
-                var messages = await _messageRepository.GetMessagesForConversationAsync(conversationId, 1, 0);
-                var latestMessage = messages.FirstOrDefault();
-
-                if (latestMessage != null)
-                {
-                    // Notify connected clients about the new message
-                    await _chatNotificationService.NotifyMessageSent(conversationId, latestMessage);
-                }
+            if (latestMessage != null)
+            {
+                // Notify connected clients about the new message
+                await _chatNotificationService.NotifyMessageSent(conversationId, latestMessage);
             }
-  
 
-                return true;
+            return true;
         }
     }
 }

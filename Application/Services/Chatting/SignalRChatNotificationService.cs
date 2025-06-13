@@ -49,5 +49,10 @@ namespace Application.Services.Chatting
             await _hubContext.Clients.Group(conversationId.ToString())
                 .SendAsync("UserLeft", conversationId, userId, userName);
         }
+
+        Task IChatNotificationService.NotifyMessageTranslated(Guid conversationId, Guid translatedMessageId, string senderId, string targetLanguage)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -25,8 +25,8 @@ namespace Application.DTOs.Chatting
     {
         public MessageType Type { get; set; } // "text" or "voice"
         public Guid SenderConversationUserId { get; set; }
-        public string Text { get; set; } // Required for "text"
-        public string VoiceFileUrl { get; set; } // Required for "voice"
+        public string? Text { get; set; } // Required for "text"
+        public string? VoiceFileUrl { get; set; } // Required for "voice"
         public double? DurationSeconds { get; set; } // Optional for "voice"
         public bool NeedTranslation { get; set; }
     }

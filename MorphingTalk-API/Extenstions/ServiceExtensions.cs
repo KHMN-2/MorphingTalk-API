@@ -48,6 +48,8 @@ namespace MorphingTalk_API.Extensions
             services.AddScoped<IFriendshipRepository, FriendshipRepository>();
             services.AddScoped<IChatNotificationService, SignalRChatNotificationService>();
             services.AddScoped<IFriendshipService, FriendshipService>();
+            services.AddScoped<IConversationService, ConversationService>();
+            services.AddScoped<IAIWebhookService, AIWebhookService>();
 
             services.AddScoped<IFileValidator, FileValidator>();
             services.AddScoped<IFilePathProvider, FilePathProvider>();

@@ -50,6 +50,7 @@ namespace Application.Services.Authentication
                     Description = conversation.Description,
                     Users = conversation.ConversationUsers?.Select(cu => new ConversationUserDto
                     {
+                        ConversationUserId = cu.Id,
                         UserId = cu.UserId,
                         DisplayName = cu.User?.FullName,
                         Role = cu.Role.ToString(),
@@ -105,6 +106,7 @@ namespace Application.Services.Authentication
                         CreatedAt = existingConversation.CreatedAt,
                         Users = existingConversation.ConversationUsers.Select(cu => new ConversationUserDto
                         {
+                            ConversationUserId = cu.Id,
                             UserId = cu.UserId,
                             DisplayName = cu.User?.FullName,
                             Role = cu.Role.ToString(),
@@ -151,7 +153,8 @@ namespace Application.Services.Authentication
                 Type = created.Type,
                 CreatedAt = created.CreatedAt,
                 Users = created.ConversationUsers.Select(cu => new ConversationUserDto
-                {
+                {   
+                    ConversationUserId = cu.Id,
                     UserId = cu.UserId,
                     DisplayName = cu.User?.FullName,
                     Role = cu.Role.ToString(),
