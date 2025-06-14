@@ -35,6 +35,11 @@ namespace Application.Services.FileService
             var user = await tokenService.GetUserFromToken(token);
             return await UploadFileAsync(file, user.Id, FileServiceConfig.ImagesFolder, _fileValidator.ValidateImage);
         }
+        public async Task<string> UploadAudioAsync(IFormFile file, string token)
+        {
+            var user = await tokenService.GetUserFromToken(token);
+            return await UploadFileAsync(file, user.Id, FileServiceConfig.AudiosFolder, _fileValidator.ValidateAudio);
+        }
 
         public async Task<string> UploadVideoAsync(IFormFile file, string token)
         {

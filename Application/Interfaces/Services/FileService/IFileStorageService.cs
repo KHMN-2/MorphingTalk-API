@@ -7,6 +7,7 @@ namespace Application.Interfaces.Services.FileService
         Task<string> UploadDocumentAsync(IFormFile file, string fileName);
         Task<string> UploadImageAsync(IFormFile file, string fileName);
         Task<string> UploadVideoAsync(IFormFile file, string fileName);
+        Task<string> UploadAudioAsync(IFormFile file, string fileName);
         Task<string> UploadDocumentWithoutAuthAsync(IFormFile file);
         Task<string> UploadImageWithoutAuthAsync(IFormFile file);
         Task<string> UploadVideoWithoutAuthAsync(IFormFile file);

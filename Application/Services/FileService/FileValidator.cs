@@ -82,6 +82,21 @@ namespace Application.Services.FileService
                    $"Video size exceeds {FileServiceConfig.MaxVideoSize / (1024 * 1024)}MB limit.");
             }
         }
+        public void ValidateAudio(IFormFile file)
+        {
+            //ValidateFile(file);
+            var extension = Path.GetExtension(file.FileName).ToLower();
+            if (!FileServiceConfig.ValidAudioExtensions.Contains(extension))
+            {
+                throw new BadHttpRequestException(
+                    $"File is not a valid audio. Allowed extensions: {string.Join(", ", FileServiceConfig.ValidAudioExtensions)}");
+            }
+            if (file.Length > FileServiceConfig.MaxAudioSize)
+            {
+                throw new BadHttpRequestException(
+                   $"Audio size exceeds {FileServiceConfig.MaxAudioSize / (1024 * 1024)}MB limit.");
+            }
+        }
 
         private static string GetFileTypeName(string extension)
         {

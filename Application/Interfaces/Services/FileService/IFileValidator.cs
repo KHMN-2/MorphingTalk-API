@@ -7,6 +7,7 @@ namespace Application.Interfaces.Services.FileService
         void ValidateDocument(IFormFile file);
         void ValidateImage(IFormFile file);
         void ValidateVideo(IFormFile file);
+        void ValidateAudio(IFormFile file);
     }
 }
 

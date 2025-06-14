@@ -46,71 +46,80 @@ namespace MorphingTalk_API.Controllers
             return Ok(new ResponseViewModel<string>(relativePath, "Added successfully", true, StatusCodes.Status200OK));
         }
 
-        [HttpPost("public/document")]
-        public async Task<IActionResult> UploadDocumentWithoutAuth(IFormFile file)
+        [HttpPost("audio")]
+        [Authorize]
+        public async Task<IActionResult> UploadAudio(IFormFile file)
         {
-            try
-            {
-                var relativePath = await _fileStorageService.UploadDocumentWithoutAuthAsync(file);
-                return Ok(new ResponseViewModel<string>(relativePath, "Added successfully", true, StatusCodes.Status200OK));
-            }
-            catch (BadHttpRequestException ex)
-            {
-                return Ok(new ResponseViewModel<string>(null, ex.Message, false, StatusCodes.Status400BadRequest));
-            }
-            catch (ArgumentNullException ex)
-            {
-                return Ok(new ResponseViewModel<string>(null, ex.Message, false, StatusCodes.Status400BadRequest));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new ResponseViewModel<string>(null, "An error occurred while uploading the document.", false, StatusCodes.Status500InternalServerError));
-            }
+            var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            var relativePath = await _fileStorageService.UploadAudioAsync(file, token);
+            return Ok(new ResponseViewModel<string>(relativePath, "Added successfully", true, StatusCodes.Status200OK));
         }
 
-        [HttpPost("public/image")]
-        public async Task<IActionResult> UploadImageWithoutAuth(IFormFile file)
-        {
-            try
-            {
-                var relativePath = await _fileStorageService.UploadImageWithoutAuthAsync(file);
-                return Ok(new ResponseViewModel<string>(relativePath, "Added successfully", true, StatusCodes.Status200OK));
-            }
-            catch (BadHttpRequestException ex)
-            {
-                return Ok(new ResponseViewModel<string>(null, ex.Message, false, StatusCodes.Status400BadRequest));
-            }
-            catch (ArgumentNullException ex)
-            {
-                return Ok(new ResponseViewModel<string>(null, ex.Message, false, StatusCodes.Status400BadRequest));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new ResponseViewModel<string>(null, "An error occurred while uploading the document.", false, StatusCodes.Status500InternalServerError));
-            }
-        }
+        //[HttpPost("public/document")]
+        //public async Task<IActionResult> UploadDocumentWithoutAuth(IFormFile file)
+        //{
+        //    try
+        //    {
+        //        var relativePath = await _fileStorageService.UploadDocumentWithoutAuthAsync(file);
+        //        return Ok(new ResponseViewModel<string>(relativePath, "Added successfully", true, StatusCodes.Status200OK));
+        //    }
+        //    catch (BadHttpRequestException ex)
+        //    {
+        //        return Ok(new ResponseViewModel<string>(null, ex.Message, false, StatusCodes.Status400BadRequest));
+        //    }
+        //    catch (ArgumentNullException ex)
+        //    {
+        //        return Ok(new ResponseViewModel<string>(null, ex.Message, false, StatusCodes.Status400BadRequest));
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new ResponseViewModel<string>(null, "An error occurred while uploading the document.", false, StatusCodes.Status500InternalServerError));
+        //    }
+        //}
 
-        [HttpPost("public/video")]
-        public async Task<IActionResult> UploadVideoWithoutAuth(IFormFile file)
-        {
-            try
-            {
-                var relativePath = await _fileStorageService.UploadVideoWithoutAuthAsync(file);
-                return Ok(new { RelativePath = relativePath });
-            }
-            catch (BadHttpRequestException ex)
-            {
-                return Ok(new ResponseViewModel<string>(null, ex.Message, false, StatusCodes.Status400BadRequest));
-            }
-            catch (ArgumentNullException ex)
-            {
-                return Ok(new ResponseViewModel<string>(null, ex.Message, false, StatusCodes.Status400BadRequest));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new ResponseViewModel<string>(null, "An error occurred while uploading the document.", false, StatusCodes.Status500InternalServerError));
-            }
-        }
+        //[HttpPost("public/image")]
+        //public async Task<IActionResult> UploadImageWithoutAuth(IFormFile file)
+        //{
+        //    try
+        //    {
+        //        var relativePath = await _fileStorageService.UploadImageWithoutAuthAsync(file);
+        //        return Ok(new ResponseViewModel<string>(relativePath, "Added successfully", true, StatusCodes.Status200OK));
+        //    }
+        //    catch (BadHttpRequestException ex)
+        //    {
+        //        return Ok(new ResponseViewModel<string>(null, ex.Message, false, StatusCodes.Status400BadRequest));
+        //    }
+        //    catch (ArgumentNullException ex)
+        //    {
+        //        return Ok(new ResponseViewModel<string>(null, ex.Message, false, StatusCodes.Status400BadRequest));
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new ResponseViewModel<string>(null, "An error occurred while uploading the document.", false, StatusCodes.Status500InternalServerError));
+        //    }
+        //}
+
+        //[HttpPost("public/video")]
+        //public async Task<IActionResult> UploadVideoWithoutAuth(IFormFile file)
+        //{
+        //    try
+        //    {
+        //        var relativePath = await _fileStorageService.UploadVideoWithoutAuthAsync(file);
+        //        return Ok(new { RelativePath = relativePath });
+        //    }
+        //    catch (BadHttpRequestException ex)
+        //    {
+        //        return Ok(new ResponseViewModel<string>(null, ex.Message, false, StatusCodes.Status400BadRequest));
+        //    }
+        //    catch (ArgumentNullException ex)
+        //    {
+        //        return Ok(new ResponseViewModel<string>(null, ex.Message, false, StatusCodes.Status400BadRequest));
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new ResponseViewModel<string>(null, "An error occurred while uploading the document.", false, StatusCodes.Status500InternalServerError));
+        //    }
+        //}
 
 
 
