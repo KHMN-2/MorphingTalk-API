@@ -28,7 +28,8 @@ namespace Application.Services.Chatting
             _chatNotificationService = chatNotificationService;
             _memoryCache = memoryCache;
             _logger = logger;
-        }        public async Task<bool> ProcessMessageAsync(SendMessageDto message, Guid conversationId, string userId)
+        }        
+        public async Task<bool> ProcessMessageAsync(SendMessageDto message, Guid conversationId, string userId)
         {
             var handler = _handlers.FirstOrDefault(h => h.CanHandle(message.Type));
             var cu = await _conversationUserRepo.GetByIdsAsync(conversationId, userId);

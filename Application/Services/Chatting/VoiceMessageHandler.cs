@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.DTOs.Chatting;
+using Application.Interfaces.Repositories;
 using Application.Interfaces.Services.Chatting;
 using Domain.Entities.Chatting;
 using Microsoft.Extensions.Logging;
@@ -14,9 +15,11 @@ namespace Application.Services.Chatting
     public class VoiceMessageHandler : IMessageHandler
     {
         private readonly ILogger<VoiceMessageHandler> _logger;
+        private readonly IMessageRepository _messageRepository;
 
-        public VoiceMessageHandler(ILogger<VoiceMessageHandler> logger)
+        public VoiceMessageHandler(ILogger<VoiceMessageHandler> logger, IMessageRepository messageRepository)
         {
+            _messageRepository = messageRepository;
             _logger = logger;
         }
 
@@ -24,12 +27,25 @@ namespace Application.Services.Chatting
 
         public async Task HandleMessageAsync(SendMessageDto message, Guid conversationId, string userId)
         {
-            //var voiceMessage = message as VoiceMessage;
-            //if (voiceMessage == null) throw new InvalidOperationException("Invalid message type");
+            var voiceMessage = new VoiceMessage
+            {
+                Id = Guid.NewGuid(),
+                ConversationId = conversationId,
+                ConversationUserId = message.SenderConversationUserId,
+                VoiceUrl = message.VoiceFileUrl, // Assuming SendMessageDto has this property
+                VoiceDuration = (double) message.DurationSeconds, // Assuming SendMessageDto has this property
+                SentAt = DateTime.UtcNow,
 
-            //// Add voice-specific processing logic here
-            //_logger.LogInformation($"Processing voice message: {voiceMessage.VoiceUrl}");
-            //await Task.CompletedTask;
+            };
+            if (voiceMessage == null) throw new InvalidOperationException("Invalid message type");
+
+            // Save the message to the repository
+            await _messageRepository.AddAsync(voiceMessage);
+
+
+            // Add text-specific processing logic here
+            _logger.LogInformation($"Processing voice message: {voiceMessage.VoiceUrl} with duration {voiceMessage.VoiceDuration} seconds");
+            await Task.CompletedTask;
         }
 
     }
