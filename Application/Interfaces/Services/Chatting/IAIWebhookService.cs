@@ -5,7 +5,6 @@ namespace Application.Interfaces.Services.Chatting
 {
     public interface IAIWebhookService
     {
-        Task<ResponseViewModel<string>> HandleTextTranslationWebhookAsync(AIWebhookPayloadDto payload);
-        Task<ResponseViewModel<string>> HandleVoiceTranslationWebhookAsync(AIWebhookPayloadDto payload);
+        Task<ResponseViewModel<string>> HandleVoiceTranslationWebhookAsync(AIWebhookInferencePayloadDto payload);
     }
 } 

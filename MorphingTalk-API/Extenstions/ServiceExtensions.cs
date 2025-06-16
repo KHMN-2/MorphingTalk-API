@@ -54,6 +54,8 @@ namespace MorphingTalk_API.Extensions
             services.AddScoped<IFileValidator, FileValidator>();
             services.AddScoped<IFilePathProvider, FilePathProvider>();
             services.AddScoped<IFileStorageService, FileStorageService>();
+            
+            services.AddHttpClient();
 
 
             services.AddIdentity<User, IdentityRole>(options =>

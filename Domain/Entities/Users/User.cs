@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using Domain.Entities.AIModels;
 using Domain.Entities.Chatting;
 using Microsoft.AspNetCore.Identity;
 
@@ -24,6 +25,7 @@ namespace Domain.Entities.Users
         public ICollection<string>? PastProfilePicturePaths { get; set; }
         public bool IsOnline { get; set; } = false;
         public DateTime? LastSeen { get; set; } = null;
-
+        public bool IsTrainedVoice { get; set; }
+        public UserVoiceModel VoiceModel { get; set; }
     }
 }

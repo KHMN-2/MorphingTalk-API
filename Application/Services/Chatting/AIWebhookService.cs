@@ -4,6 +4,16 @@ using Application.Interfaces.Repositories;
 using Application.Interfaces.Services.Chatting;
 using Domain.Entities.Chatting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.WebEncoders;
+using System.Net.Http.Headers;
+using System.IO;
+using System.Threading.Tasks;
+using System;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Application.Services.Chatting
 {
@@ -11,68 +21,28 @@ namespace Application.Services.Chatting
     {
         private readonly IMessageRepository _messageRepository;
         private readonly IChatNotificationService _chatNotificationService;
+        private readonly IMemoryCache _memoryCache;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
+        private readonly IWebHostEnvironment _env;
 
         public AIWebhookService(
             IMessageRepository messageRepository,
-            IChatNotificationService chatNotificationService)
+            IChatNotificationService chatNotificationService,
+            IMemoryCache memoryCache,
+            IHttpClientFactory httpClientFactory,
+            IConfiguration configuration,
+            IWebHostEnvironment env)
         {
             _messageRepository = messageRepository;
             _chatNotificationService = chatNotificationService;
+            _memoryCache = memoryCache;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
+            _env = env;
         }
 
-        public async Task<ResponseViewModel<string>> HandleTextTranslationWebhookAsync(AIWebhookPayloadDto payload)
-        {
-            if (!payload.Success)
-            {
-                return new ResponseViewModel<string>(null, $"Translation failed: {payload.ErrorMessage}", false, StatusCodes.Status400BadRequest);
-            }
-
-            try
-            {
-                //var messageId = Guid.Parse(payload.TextTranslation.MessageId);
-                //var message = await _messageRepository.GetByIdAsync(messageId);
-
-                //if (message == null)
-                //{
-                //    return new ResponseViewModel<string>(null, "Message not found", false, StatusCodes.Status404NotFound);
-                //}
-
-                //if (message is TextMessage textMessage)
-                //{
-                //    // Create a new translated message
-                //    var translatedMessage = new TextMessage
-                //    {
-                //        Content = payload.TextTranslation.TranslatedText,
-                //        ConversationId = message.ConversationId,
-                //        ConversationUserId = message.ConversationUserId,
-                //        SentAt = DateTime.UtcNow,
-                //        Status = MessageStatus.Sent,
-                //        IsTranslated = true,
-                //        OriginalMessageId = messageId,
-                //        Language = payload.TextTranslation.TargetLanguage
-                //    };
-
-                //    await _messageRepository.AddAsync(translatedMessage);
-
-                //    // Notify all users about the translation
-                //    await _chatNotificationService.NotifyMessageTranslated(
-                //        message.ConversationId,
-                //        translatedMessage.Id,
-                //        message.ConversationUser.UserId,
-                //        payload.TextTranslation.TargetLanguage
-                //    );
-                //    return new ResponseViewModel<string>(translatedMessage.Id.ToString(), "Translation processed successfully", true, StatusCodes.Status200OK);
-                //}
-
-                return new ResponseViewModel<string>(null, "Message is not a text message", false, StatusCodes.Status400BadRequest);
-            }
-            catch (Exception ex)
-            {
-                return new ResponseViewModel<string>(null, $"Error processing translation: {ex.Message}", false, StatusCodes.Status500InternalServerError);
-            }
-        }
-
-        public async Task<ResponseViewModel<string>> HandleVoiceTranslationWebhookAsync(AIWebhookPayloadDto payload)
+        public async Task<ResponseViewModel<string>> HandleVoiceTranslationWebhookAsync(AIWebhookInferencePayloadDto payload)
         {
             if (!payload.Success)
             {
@@ -81,44 +51,59 @@ namespace Application.Services.Chatting
 
             try
             {
-                //var messageId = Guid.Parse(payload.VoiceTranslation.MessageId);
-                //var message = await _messageRepository.GetByIdAsync(messageId);
-                
-                //if (message == null)
-                //{
-                //    return new ResponseViewModel<string>(null, "Message not found", false, StatusCodes.Status404NotFound);
-                //}
+                var taskId = payload.TaskId;
+                var message = _memoryCache.Get<VoiceMessage>(taskId);
+                if (message == null)
+                {
+                    return new ResponseViewModel<string>(null, "Message not found in cache", false, StatusCodes.Status404NotFound);
+                }
 
-                //if (message is VoiceMessage voiceMessage)
-                //{
-                //    // Create a new translated voice message
-                //    var translatedMessage = new VoiceMessage
-                //    {
-                //        VoiceUrl = payload.VoiceTranslation.TranslatedVoiceUrl,
-                //        VoiceDuration = payload.VoiceTranslation.Duration,
-                //        ConversationId = message.ConversationId,
-                //        ConversationUserId = message.ConversationUserId,
-                //        SentAt = DateTime.UtcNow,
-                //        Status = MessageStatus.Sent,
-                //        IsTranslated = true,
-                //        OriginalMessageId = messageId,
-                //        Language = payload.VoiceTranslation.TargetLanguage
-                //    };
+                // Get config values
+                string aiBaseLink = _configuration["AIBaseLink"];
+                string aiJwtSecret = _configuration["AIJWTSecret"];
+                var client = _httpClientFactory.CreateClient();
+                client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", aiJwtSecret);
 
-                //    await _messageRepository.AddAsync(translatedMessage);
+                // GET request to fetch the audio result
+                var resultUrl = $"{aiBaseLink}/voice/result/{taskId}";
+                var resultResponse = await client.GetAsync(resultUrl);
 
-                //    // Notify all users about the translation
-                //    await _chatNotificationService.NotifyMessageTranslated(
-                //        message.ConversationId,
-                //        translatedMessage.Id,
-                //        message.ConversationUser.UserId,
-                //        payload.VoiceTranslation.TargetLanguage
-                //    );
+                if (!resultResponse.IsSuccessStatusCode)
+                {
+                    return new ResponseViewModel<string>(null, "Failed to fetch translated audio file", false, (int)resultResponse.StatusCode);
+                }
 
-                //    return new ResponseViewModel<string>(translatedMessage.Id.ToString(), "Voice translation processed successfully", true, StatusCodes.Status200OK);
-                //}
+                // Determine file extension from content type
+                var contentType = resultResponse.Content.Headers.ContentType?.MediaType;
+                string fileExt = contentType switch
+                {
+                    "audio/wav" => ".wav",
+                    "audio/m4a" => ".m4a",
+                    _ => ".dat"
+                };
 
-                return new ResponseViewModel<string>(null, "Message is not a voice message", false, StatusCodes.Status400BadRequest);
+                // Save the file to a location in wwwroot/translated_audio/
+                var fileName = $"{Guid.NewGuid()}{fileExt}";
+                var saveDir = Path.Combine(_env.WebRootPath, "translated_audio");
+                Directory.CreateDirectory(saveDir);
+                var savePath = Path.Combine(saveDir, fileName);
+
+                using (var fs = new FileStream(savePath, FileMode.Create, FileAccess.Write))
+                {
+                    await resultResponse.Content.CopyToAsync(fs);
+                }
+                message.IsTranslated = true;
+                // Here you can update your message or database with the new file path if needed
+                message.TranslatedVoiceUrl = $"/translated_audio/{fileName}";
+
+                // Save the message to the repository
+                await _messageRepository.AddAsync(message);
+                // Notify connected clients about the new translated voice message
+                await _chatNotificationService.NotifyMessageSent(message.ConversationId, message);
+
+                // Return the relative path or URL to the saved file
+                var relativePath = $"/translated_audio/{fileName}";
+                return new ResponseViewModel<string>(relativePath, "Voice translation processed and file saved successfully", true, StatusCodes.Status200OK);
             }
             catch (Exception ex)
             {

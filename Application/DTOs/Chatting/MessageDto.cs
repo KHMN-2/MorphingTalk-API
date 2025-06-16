@@ -28,6 +28,8 @@ namespace Application.DTOs.Chatting
         public string? Text { get; set; } // Required for "text"
         public string? VoiceFileUrl { get; set; } // Required for "voice"
         public double? DurationSeconds { get; set; } // Optional for "voice"
+        public bool? UseRobotVoice { get; set; }
         public bool NeedTranslation { get; set; }
+        public string? TargetLanguage { get; set; }
     }
 }

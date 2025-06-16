@@ -47,5 +47,10 @@ namespace Application.Services.Chatting
             _logger.LogInformation($"Processing text message: {textMessage.Content}");
             await Task.CompletedTask;
         }
+
+        public Task<string> HandleTranslationAsync(SendMessageDto message, Guid conversationId, string userId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

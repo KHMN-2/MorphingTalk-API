@@ -16,8 +16,8 @@ namespace MorphingTalk_API.Controllers
             _webhookService = webhookService;
         }
 
-        [HttpPost("ai-callback")]
-        public async Task<IActionResult> HandleAICallback([FromBody] AIWebhookPayloadDto payload)
+        [HttpPost("inference-result")]
+        public async Task<IActionResult> HandleAICallback([FromBody] AIWebhookInferencePayloadDto payload)
         {
             if (payload == null)
             {
@@ -25,14 +25,25 @@ namespace MorphingTalk_API.Controllers
                     new ResponseViewModel<string>(null, "Invalid payload", false, StatusCodes.Status400BadRequest));
             }
 
-            var response = payload.Type switch
-            {
-                WebhookType.TextTranslation => await _webhookService.HandleTextTranslationWebhookAsync(payload),
-                WebhookType.VoiceTranslation => await _webhookService.HandleVoiceTranslationWebhookAsync(payload),
-                _ => new ResponseViewModel<string>(null, "Unsupported webhook type", false, StatusCodes.Status400BadRequest)
-            };
+            var response = await _webhookService.HandleVoiceTranslationWebhookAsync(payload);
+          
 
             return StatusCode(response.StatusCode, response);
         }
+        [HttpPost("training-result")]
+        public async Task<IActionResult> HandleTrainingResult([FromBody] AIWebhookTrainingPayloadDto payload)
+        {
+            if (payload == null)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest,
+                    new ResponseViewModel<string>(null, "Invalid payload", false, StatusCodes.Status400BadRequest));
+            }
+
+            //var response = await _webhookService.HandleTrainingResultWebhookAsync(payload);
+            //return StatusCode(response.StatusCode, response);
+            return StatusCode(StatusCodes.Status501NotImplemented,
+                new ResponseViewModel<string>(null, "Training result webhook not implemented", false, StatusCodes.Status501NotImplemented));
+        }
+
     }
 } 

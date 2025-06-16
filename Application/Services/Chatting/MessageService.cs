@@ -20,7 +20,8 @@ namespace Application.Services.Chatting
         private readonly IConversationUserRepository _conversationUserRepo;
         private readonly IMessageRepository _messageRepository;
         private readonly IChatNotificationService _chatNotificationService;
-        private readonly IMemoryCache _memoryCache;        public MessageService(IEnumerable<IMessageHandler> handlers, IConversationUserRepository conversationUserRepository, IMessageRepository messageRepository, IChatNotificationService chatNotificationService, IMemoryCache memoryCache, ILogger<MessageService> logger)
+        private readonly IMemoryCache _memoryCache;       
+        public MessageService(IEnumerable<IMessageHandler> handlers, IConversationUserRepository conversationUserRepository, IMessageRepository messageRepository, IChatNotificationService chatNotificationService, IMemoryCache memoryCache, ILogger<MessageService> logger)
         {
             _handlers = handlers;
             _conversationUserRepo = conversationUserRepository;
@@ -46,9 +47,23 @@ namespace Application.Services.Chatting
             
             if (message.NeedTranslation)
             {
-                var cacheKey = $"{conversationId}_" + Guid.NewGuid();
-              
-                _memoryCache.Set(cacheKey, message, TimeSpan.FromMinutes(30));
+                if(message.Type != MessageType.Text)
+                {
+                    var Translatedmessage = await handler.HandleTranslationAsync(message, conversationId, userId);
+                }
+                else
+                {
+                    var taskId = await handler.HandleTranslationAsync(message, conversationId, userId);
+                    VoiceMessage voiceMessage = new VoiceMessage
+                    {
+                        Id = Guid.NewGuid(),
+                        ConversationId = conversationId,
+                        ConversationUserId = message.SenderConversationUserId,
+                        VoiceUrl = message.VoiceFileUrl, // Assuming taskId is the URL of the translated voice message
+                        SentAt = DateTime.UtcNow,
+                    };
+                    _memoryCache.Set(taskId, voiceMessage, TimeSpan.FromMinutes(30));
+                }
 
                 return false; // Indicate that the message is being processed for translation
             }
