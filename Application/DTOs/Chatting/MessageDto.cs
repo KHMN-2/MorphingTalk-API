@@ -15,11 +15,15 @@ namespace Application.DTOs.Chatting
         public string Type { get; set; } // e.g. "text", "voice"
         public string SenderId { get; set; }
         public string SenderDisplayName { get; set; }
-        public string Text { get; set; }
+        public string? Text { get; set; }
+        public string? VoiceFileUrl { get; set; }
+        public double? Duration { get; set; }
+        public bool IsTranslated { get; set; } // Indicates if the message has been translated
+        public string? OriginalVoiceFileUrl { get; set; }
         public DateTime SentAt { get; set; }
         public string MessageStatus { get; set; } // e.g. "sent", "delivered", "read"
-
         public string ConversationId { get; set; } // Optional, if needed
+
     }
     public class SendMessageDto
     {

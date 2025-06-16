@@ -25,13 +25,15 @@ namespace Application.Services.Chatting
             var messageDto = new MessageSummaryDto
             {
                 Id = message.Id,
-                Type = message is TextMessage ? "text" : message is VoiceMessage ? "voice" : "unknown",
+                Type = message is TextMessage ? MessageType.Text.ToString() : message is VoiceMessage ? MessageType.Voice.ToString() : "unknown",
                 SenderId = message.ConversationUser?.UserId,
                 SenderDisplayName = message.ConversationUser?.User?.FullName,
                 Text = message is TextMessage tm ? tm.Content : null,
                 SentAt = message.SentAt,
                 ConversationId = message.ConversationId.ToString(),
-                MessageStatus = message.Status.ToString()
+                MessageStatus = message.Status.ToString(),
+                VoiceFileUrl = message is VoiceMessage vm ? (vm.IsTranslated ? vm.TranslatedVoiceUrl : vm.VoiceUrl) : null,
+                Duration = message is VoiceMessage v ? v.VoiceDuration : null,
             };
 
             await _hubContext.Clients.Group(conversationId.ToString())

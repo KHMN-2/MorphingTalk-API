@@ -74,10 +74,13 @@ namespace Application.Services.Authentication
                         .Select(m => new MessageSummaryDto
                         {
                             Id = m.Id,
-                            Type = m is TextMessage ? "text" : m is VoiceMessage ? "voice" : "unknown",
+                            Type = m is TextMessage ? MessageType.Text.ToString() : m is VoiceMessage ? MessageType.Voice.ToString() : "unknown",
                             SenderId = m.ConversationUser?.UserId,
                             SenderDisplayName = m.ConversationUser?.User?.FullName,
                             Text = m is TextMessage tm ? tm.Content : null,
+
+                            VoiceFileUrl = m is VoiceMessage vm ? (vm.IsTranslated ? vm.TranslatedVoiceUrl : vm.VoiceUrl) : null,
+                            Duration = m is VoiceMessage v ? v.VoiceDuration : null,
                             SentAt = m.SentAt,
                             MessageStatus = m.Status.ToString(),
                         }).FirstOrDefault(),
@@ -241,10 +244,12 @@ namespace Application.Services.Authentication
                     .Select(m => new MessageSummaryDto
                     {
                         Id = m.Id,
-                        Type = m is TextMessage ? "text" : m is VoiceMessage ? "voice" : "unknown",
+                        Type = m is TextMessage ? MessageType.Text.ToString() : m is VoiceMessage ? MessageType.Text.ToString() : "unknown",
                         SenderId = m.ConversationUser?.UserId,
                         SenderDisplayName = m.ConversationUser?.User?.FullName,
                         Text = m is TextMessage tm ? tm.Content : null,
+                        VoiceFileUrl = m is VoiceMessage vm ? (vm.IsTranslated ? vm.TranslatedVoiceUrl : vm.VoiceUrl) : null,
+                        Duration = m is VoiceMessage v ? v.VoiceDuration : null,
                         SentAt = m.SentAt
                     }).FirstOrDefault()
             };
