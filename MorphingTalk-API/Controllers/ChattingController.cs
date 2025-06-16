@@ -130,10 +130,10 @@ public class ChattingController : ControllerBase
             return StatusCode(StatusCodes.Status200OK, 
                 new ResponseViewModel<bool>(result, "Message sent successfully", true, StatusCodes.Status200OK));
         }
-        catch (Exception)
+        catch (Exception e)
         {
             return StatusCode(StatusCodes.Status400BadRequest, 
-                new ResponseViewModel<string>(null, "Unsupported message type", false, StatusCodes.Status400BadRequest));
+                new ResponseViewModel<string>(null, e.Message, false, StatusCodes.Status400BadRequest));
         }
     }
 

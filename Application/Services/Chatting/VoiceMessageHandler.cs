@@ -50,12 +50,13 @@ namespace Application.Services.Chatting
         {
             var voiceMessage = new VoiceMessage
             {
-                Id = Guid.NewGuid(),
                 ConversationId = conversationId,
                 ConversationUserId = message.SenderConversationUserId,
                 VoiceUrl = message.VoiceFileUrl, // Assuming SendMessageDto has this property
+                VoiceDuration = message.DurationSeconds ?? 0,
                 SentAt = DateTime.UtcNow,
-
+                IsTranslated = false,
+                TranslatedVoiceUrl = null 
             };
             if (voiceMessage == null) throw new InvalidOperationException("Invalid message type");
 
