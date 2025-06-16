@@ -33,7 +33,7 @@ namespace Application.Services.Chatting
                 ConversationId = message.ConversationId.ToString(),
                 MessageStatus = message.Status.ToString(),
                 VoiceFileUrl = message is VoiceMessage vm ? (vm.IsTranslated ? vm.TranslatedVoiceUrl : vm.VoiceUrl) : null,
-                Duration = message is VoiceMessage v ? v.VoiceDuration : null,
+                Duration = message is VoiceMessage v ? v.DurationSeconds : null,
             };
 
             await _hubContext.Clients.Group(conversationId.ToString())

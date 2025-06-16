@@ -80,7 +80,7 @@ namespace Application.Services.Authentication
                             Text = m is TextMessage tm ? tm.Content : null,
 
                             VoiceFileUrl = m is VoiceMessage vm ? (vm.IsTranslated ? vm.TranslatedVoiceUrl : vm.VoiceUrl) : null,
-                            Duration = m is VoiceMessage v ? v.VoiceDuration : null,
+                            Duration = m is VoiceMessage v ? v.DurationSeconds : null,
                             SentAt = m.SentAt,
                             MessageStatus = m.Status.ToString(),
                         }).FirstOrDefault(),
@@ -249,7 +249,7 @@ namespace Application.Services.Authentication
                         SenderDisplayName = m.ConversationUser?.User?.FullName,
                         Text = m is TextMessage tm ? tm.Content : null,
                         VoiceFileUrl = m is VoiceMessage vm ? (vm.IsTranslated ? vm.TranslatedVoiceUrl : vm.VoiceUrl) : null,
-                        Duration = m is VoiceMessage v ? v.VoiceDuration : null,
+                        Duration = m is VoiceMessage v ? v.DurationSeconds : null,
                         SentAt = m.SentAt
                     }).FirstOrDefault()
             };

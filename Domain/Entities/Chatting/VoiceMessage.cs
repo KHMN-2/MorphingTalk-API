@@ -11,7 +11,7 @@ namespace Domain.Entities.Chatting
         public string VoiceUrl { get; set; }
         public bool IsTranslated { get; set; }
         public string? TranslatedVoiceUrl { get; set; }
-        public double VoiceDuration { get; set; }
+        public int? DurationSeconds { get; set; }
         public MessageType Type => MessageType.Voice;
     }
 }

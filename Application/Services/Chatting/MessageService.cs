@@ -30,7 +30,7 @@ namespace Application.Services.Chatting
             _memoryCache = memoryCache;
             _logger = logger;
         }        
-        public async Task<bool> ProcessMessageAsync(SendMessageDto message, Guid conversationId, string userId)
+        public async Task<string> ProcessMessageAsync(SendMessageDto message, Guid conversationId, string userId)
         {
             var handler = _handlers.FirstOrDefault(h => h.CanHandle(message.Type));
             var cu = await _conversationUserRepo.GetByIdsAsync(conversationId, userId);
@@ -47,7 +47,7 @@ namespace Application.Services.Chatting
             
             if (message.NeedTranslation)
             {
-                if(message.Type != MessageType.Text)
+                if(message.Type == MessageType.Text)
                 {
                     var Translatedmessage = await handler.HandleTranslationAsync(message, conversationId, userId);
                 }
@@ -63,9 +63,9 @@ namespace Application.Services.Chatting
                         SentAt = DateTime.UtcNow,
                     };
                     _memoryCache.Set(taskId, voiceMessage, TimeSpan.FromMinutes(30));
+                    return taskId; // Return the task ID for the translation process
                 }
 
-                return false; // Indicate that the message is being processed for translation
             }
 
             await handler.HandleMessageAsync(message, conversationId, userId);
@@ -80,7 +80,7 @@ namespace Application.Services.Chatting
                 await _chatNotificationService.NotifyMessageSent(conversationId, latestMessage);
             }
 
-            return true;
+            return "";
         }
     }
 }

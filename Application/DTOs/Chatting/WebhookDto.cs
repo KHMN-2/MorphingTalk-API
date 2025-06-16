@@ -4,9 +4,9 @@ namespace Application.DTOs.Chatting
 {
     public class AIWebhookInferencePayloadDto
     {
-        public string TaskId { get; set; }
+        public string RequestId { get; set; }
         public string? modelId { get; set; }
-        public bool Success { get; set; }
+        public string Success { get; set; }
         public string ErrorMessage { get; set; }
     }
 

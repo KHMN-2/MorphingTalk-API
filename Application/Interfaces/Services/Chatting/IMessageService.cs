@@ -11,7 +11,7 @@ namespace Application.Interfaces.Services.Chatting
 {
     public interface IMessageService
     {
-        Task<bool> ProcessMessageAsync(SendMessageDto message, Guid conversationId, string userId);
+        Task<string> ProcessMessageAsync(SendMessageDto message, Guid conversationId, string userId);
 
     }
 }

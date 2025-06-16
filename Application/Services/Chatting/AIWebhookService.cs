@@ -44,14 +44,14 @@ namespace Application.Services.Chatting
 
         public async Task<ResponseViewModel<string>> HandleVoiceTranslationWebhookAsync(AIWebhookInferencePayloadDto payload)
         {
-            if (!payload.Success)
+            if (payload.Success != "true")
             {
                 return new ResponseViewModel<string>(null, $"Voice translation failed: {payload.ErrorMessage}", false, StatusCodes.Status400BadRequest);
             }
 
             try
             {
-                var taskId = payload.TaskId;
+                var taskId = payload.RequestId;
                 var message = _memoryCache.Get<VoiceMessage>(taskId);
                 if (message == null)
                 {
@@ -75,10 +75,11 @@ namespace Application.Services.Chatting
 
                 // Determine file extension from content type
                 var contentType = resultResponse.Content.Headers.ContentType?.MediaType;
+                
                 string fileExt = contentType switch
                 {
                     "audio/wav" => ".wav",
-                    "audio/m4a" => ".m4a",
+                    "audio/mp4" => ".m4a",
                     _ => ".dat"
                 };
 

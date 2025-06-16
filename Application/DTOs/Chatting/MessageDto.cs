@@ -7,7 +7,7 @@ namespace Application.DTOs.Chatting
         public string Type { get; set; } // "text" or "voice"
         public string? Text { get; set; }
         public string? VoiceFileUrl { get; set; }
-        public double? DurationSeconds { get; set; }
+        public int? DurationSeconds { get; set; }
     }
     public class MessageSummaryDto
     {
@@ -17,7 +17,7 @@ namespace Application.DTOs.Chatting
         public string SenderDisplayName { get; set; }
         public string? Text { get; set; }
         public string? VoiceFileUrl { get; set; }
-        public double? Duration { get; set; }
+        public int? Duration { get; set; }
         public bool IsTranslated { get; set; } // Indicates if the message has been translated
         public string? OriginalVoiceFileUrl { get; set; }
         public DateTime SentAt { get; set; }
@@ -31,7 +31,7 @@ namespace Application.DTOs.Chatting
         public Guid SenderConversationUserId { get; set; }
         public string? Text { get; set; } // Required for "text"
         public string? VoiceFileUrl { get; set; } // Required for "voice"
-        public double? DurationSeconds { get; set; } // Optional for "voice"
+        public int? DurationSeconds { get; set; } // Optional for "voice"
         public bool? UseRobotVoice { get; set; }
         public bool NeedTranslation { get; set; }
         public string? TargetLanguage { get; set; }

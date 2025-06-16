@@ -127,8 +127,13 @@ public class ChattingController : ControllerBase
         try
         {
             var result = await _messageService.ProcessMessageAsync(dto, conversationId, userId);
+            if(result != "")
+            {
+                return StatusCode(StatusCodes.Status200OK,
+                    new ResponseViewModel<string>(result, "Message will be translated", true, StatusCodes.Status200OK));
+            }
             return StatusCode(StatusCodes.Status200OK, 
-                new ResponseViewModel<bool>(result, "Message sent successfully", true, StatusCodes.Status200OK));
+                new ResponseViewModel<string>(result, "Message sent successfully", true, StatusCodes.Status200OK));
         }
         catch (Exception e)
         {
@@ -150,7 +155,7 @@ public class ChattingController : ControllerBase
             SenderDisplayName = m.ConversationUser?.User?.FullName,
             Text = m is TextMessage tm ? tm.Content : null,
             VoiceFileUrl = m is VoiceMessage vm ? (vm.IsTranslated ? vm.TranslatedVoiceUrl : vm.VoiceUrl) : null,
-            Duration = m is VoiceMessage v ? v.VoiceDuration : null,
+            Duration = m is VoiceMessage v ? v.DurationSeconds : null,
             SentAt = m.SentAt
         }).ToList();
 

@@ -53,10 +53,11 @@ namespace Application.Services.Chatting
                 ConversationId = conversationId,
                 ConversationUserId = message.SenderConversationUserId,
                 VoiceUrl = message.VoiceFileUrl, // Assuming SendMessageDto has this property
-                VoiceDuration = message.DurationSeconds ?? 0,
+                DurationSeconds = 0, // <-- FIXED
                 SentAt = DateTime.UtcNow,
                 IsTranslated = false,
-                TranslatedVoiceUrl = null 
+                TranslatedVoiceUrl = null,
+                Status = MessageStatus.Sent,
             };
             if (voiceMessage == null) throw new InvalidOperationException("Invalid message type");
 
@@ -65,7 +66,7 @@ namespace Application.Services.Chatting
 
 
             // Add text-specific processing logic here
-            _logger.LogInformation($"Processing voice message: {voiceMessage.VoiceUrl} with duration {voiceMessage.VoiceDuration} seconds");
+            _logger.LogInformation($"Processing voice message: {voiceMessage.VoiceUrl} with duration {voiceMessage.DurationSeconds} seconds");
             await Task.CompletedTask;
         }
 
