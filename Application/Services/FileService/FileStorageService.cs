@@ -55,11 +55,14 @@ namespace Application.Services.FileService
         public async Task<string> UploadImageWithoutAuthAsync(IFormFile file)
         {
             return await UploadFileWithoutAuthAsync(file, FileServiceConfig.ImagesFolder, _fileValidator.ValidateImage);
-        }
-
-        public async Task<string> UploadVideoWithoutAuthAsync(IFormFile file)
+        }        public async Task<string> UploadVideoWithoutAuthAsync(IFormFile file)
         {
             return await UploadFileWithoutAuthAsync(file, FileServiceConfig.VideosFolder, _fileValidator.ValidateVideo);
+        }
+
+        public async Task<string> UploadProfilePictureAsync(IFormFile file, string userId)
+        {
+            return await UploadFileAsync(file, userId, FileServiceConfig.ProfilePicturesFolder, _fileValidator.ValidateImage);
         }
 
 
@@ -80,13 +83,11 @@ namespace Application.Services.FileService
             {
                 return false;
             }
-        }
-
-        private async Task<string> UploadFileAsync(IFormFile file, string fileName, string subFolder, Action<IFormFile> validate)
+        }        private async Task<string> UploadFileAsync(IFormFile file, string fileName, string subFolder, Action<IFormFile> validate)
         {
             validate(file);
 
-            var fullPath = _filePathProvider.BuildUploadPath(file, fileName, subFolder);
+            var fullPath = _filePathProvider.BuildUploadPath(file, subFolder, fileName);
             await SaveFileAsync(file, fullPath);
 
             var relativePath = _filePathProvider.GetRelativePath(fullPath);
