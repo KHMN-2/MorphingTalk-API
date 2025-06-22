@@ -37,7 +37,16 @@ namespace MorphingTalk_API.Controllers
         {
             var result = await _userService.GetUserByIdAsync(id);
             return Ok(result);
-        }        [HttpPut("UpdateUser")]
+        }
+
+        [HttpGet("GetUserByEmail/{email}")]
+        public async Task<IActionResult> GetUserByEmail(string email)
+        {
+            var result = await _userService.GetUserByEmailAsync(email);
+            return Ok(result);
+        }
+        
+        [HttpPut("UpdateUser")]
         public async Task<IActionResult> UpdateUser([FromBody] UpdateUserDto updateUserDto)
         {
             try
