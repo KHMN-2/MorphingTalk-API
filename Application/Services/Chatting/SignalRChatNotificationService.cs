@@ -50,11 +50,24 @@ namespace Application.Services.Chatting
         {
             await _hubContext.Clients.Group(conversationId.ToString())
                 .SendAsync("UserLeft", conversationId, userId, userName);
-        }
-
-        Task IChatNotificationService.NotifyMessageTranslated(Guid conversationId, Guid translatedMessageId, string senderId, string targetLanguage)
+        }        Task IChatNotificationService.NotifyMessageTranslated(Guid conversationId, Guid translatedMessageId, string senderId, string targetLanguage)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task NotifyVoiceTrainingCompleted(string userId, bool success, string modelId, string? errorMessage = null)
+        {
+            var notification = new
+            {
+                success = success,
+                modelId = modelId,
+                timestamp = DateTime.UtcNow,
+                message = success ? "Voice training completed successfully! Your voice model is now ready for use." 
+                                 : $"Voice training failed: {errorMessage ?? "Unknown error"}"
+            };
+
+            await _hubContext.Clients.User(userId)
+                .SendAsync("VoiceTrainingCompleted", notification);
         }
     }
 }

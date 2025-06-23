@@ -76,7 +76,7 @@ namespace Application.Services.Chatting
             if (user == null)
                 throw new KeyNotFoundException("User not found");
 
-            string modelId = (!user.IsTrainedVoice || message.UseRobotVoice == true) ? "DRRamly" : user.VoiceModel.Name;
+            string modelId = (!user.IsTrainedVoice || message.UseRobotVoice == true) ? "standard" : user.VoiceModel.Name;
             string sourceLanguage = user.NativeLanguage;
             string targetLanguage = message.TargetLanguage;
 
