@@ -101,12 +101,10 @@ namespace Application.Services.Authentication
                     Id = updatedUser.Id,
                     Email = updatedUser.Email,
                     FullName = updatedUser.FullName,
-                    IsFirstLogin = updatedUser.IsFirstLogin,
                     NativeLanguage = updatedUser.NativeLanguage,
                     AboutStatus = updatedUser.AboutStatus,
                     Gender = updatedUser.Gender,
                     ProfilePicPath = updatedUser.ProfilePicturePath,
-                    PastProfilePicsPath = updatedUser.PastProfilePicturePaths
                 };
 
                 return new ResponseViewModel<UserDto?>(userDto, "User updated successfully", true, 200);
@@ -159,12 +157,10 @@ namespace Application.Services.Authentication
                     Id = updatedUser.Id,
                     Email = updatedUser.Email,
                     FullName = updatedUser.FullName,
-                    IsFirstLogin = updatedUser.IsFirstLogin,
                     NativeLanguage = updatedUser.NativeLanguage,
                     AboutStatus = updatedUser.AboutStatus,
                     Gender = updatedUser.Gender,
                     ProfilePicPath = updatedUser.ProfilePicturePath,
-                    PastProfilePicsPath = updatedUser.PastProfilePicturePaths
                 };
 
                 return new ResponseViewModel<UserDto?>(userDto, "Profile picture updated successfully", true, 200);

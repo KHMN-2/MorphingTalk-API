@@ -95,7 +95,8 @@ namespace MorphingTalk_API.Controllers
             {
                 return StatusCode(500, new { message = $"Internal server error: {ex.Message}" });
             }
-        }        [HttpPut("UpdateProfilePicture")]
+        }        
+        [HttpPut("UpdateProfilePicture")]
         public async Task<IActionResult> UpdateProfilePicture([FromForm] UpdateUserProfileDto updateUserProfileDto)
         {
             try
