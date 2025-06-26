@@ -27,5 +27,9 @@ namespace Domain.Entities.Users
         public DateTime? LastSeen { get; set; } = null;
         public bool IsTrainedVoice { get; set; }
         public UserVoiceModel VoiceModel { get; set; }
+        public bool UseRobotVoice { get; set; } = true;
+        public bool MuteNotifications { get; set; } = false; // Optional, if needed
+        public bool TranslateMessages { get; set; } = false; // Optional, if needed
+
     }
 }

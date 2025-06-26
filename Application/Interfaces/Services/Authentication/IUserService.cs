@@ -14,5 +14,6 @@ namespace Application.Interfaces.Services.Authentication
         public Task<ResponseViewModel<UserDto>> GetUserByIdAsync(String? id);
         public Task<ResponseViewModel<UserDto>> GetUserByEmailAsync(string email);
         public Task<ResponseViewModel<List<UserDto>>> GetAllUsersAsync();
+        public Task<ResponseViewModel<LoggedInUserDto>> GetLoggedUserByIdAsync(string? id);
     }
 }

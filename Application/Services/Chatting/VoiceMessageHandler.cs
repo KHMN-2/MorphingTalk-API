@@ -53,7 +53,7 @@ namespace Application.Services.Chatting
                 ConversationId = conversationId,
                 ConversationUserId = message.SenderConversationUserId,
                 VoiceUrl = message.VoiceFileUrl, // Assuming SendMessageDto has this property
-                DurationSeconds = 0, // <-- FIXED
+                DurationSeconds = message.DurationSeconds, // <-- FIXED
                 SentAt = DateTime.UtcNow,
                 IsTranslated = false,
                 TranslatedVoiceUrl = null,

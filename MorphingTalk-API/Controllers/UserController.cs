@@ -30,7 +30,7 @@ namespace MorphingTalk_API.Controllers
         public async Task<IActionResult> GetLoggedInUser()
         {
             string userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            var result = await _userService.GetUserByIdAsync(userId);
+            var result = await _userService.GetLoggedUserByIdAsync(userId);
             return Ok(result);
         }
 

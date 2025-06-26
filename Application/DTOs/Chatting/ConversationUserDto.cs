@@ -16,7 +16,22 @@ namespace Application.DTOs.Chatting
         public DateTime LastSeenAt { get; set; } // Optional, if needed
         public string ProfileImagePath { get; set; } // Optional, if needed
         public String Role { get; set; } // e.g., "Admin", "Member"
-        public string bio { get; set; } // Optional, if needed
+        public string bio { get; set; } // Optional, if needed\
+
+        public static ConversationUserDto FromConversationUser(ConversationUser conversationUser)
+        {
+            return new ConversationUserDto
+            {
+                ConversationUserId = conversationUser.Id,
+                UserId = conversationUser.UserId,
+                DisplayName = conversationUser.User?.FullName,
+                Role = conversationUser.Role.ToString(),
+                ProfileImagePath = conversationUser.User?.ProfilePicturePath,
+                bio = conversationUser.User?.AboutStatus,
+                IsOnline = conversationUser.User?.IsOnline ?? false,
+                LastSeenAt = conversationUser.User?.LastSeen ?? DateTime.MinValue
+            };
+        }
 
     }
 

@@ -17,7 +17,8 @@ namespace MorphingTalk_API.Hubs
         public ChatHub(ILogger<ChatHub> logger)
         {
             _logger = logger;
-        }        public async Task JoinConversation(string conversationId)
+        }        
+        public async Task JoinConversation(string conversationId)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, conversationId);
             var userId = Context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "Unknown";

@@ -25,5 +25,8 @@ namespace Domain.Entities.Chatting
         public Conversation Conversation { get; set; }
         public ICollection<Message> Messages { get; set; }
         public bool LeftConversation { get; set; } = false;
+        public bool UseRobotVoice { get; set; } = true;
+        public bool TranslateMessages { get; set; } = false;
+        public bool muteNotifications { get; set; } = false; // Optional, if needed
     }
 }
