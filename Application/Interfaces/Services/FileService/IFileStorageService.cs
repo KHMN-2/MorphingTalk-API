@@ -11,6 +11,7 @@ namespace Application.Interfaces.Services.FileService
         Task<string> UploadDocumentWithoutAuthAsync(IFormFile file);
         Task<string> UploadImageWithoutAuthAsync(IFormFile file);
         Task<string> UploadVideoWithoutAuthAsync(IFormFile file);
+        Task<string> UploadProfilePictureAsync(IFormFile file, string userId);
         // Task<IActionResult> DownloadFileAsync(string relativePath);
         bool DeleteFile(string relativePath);
     }

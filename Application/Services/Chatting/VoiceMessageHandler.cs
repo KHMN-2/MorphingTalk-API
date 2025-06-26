@@ -48,22 +48,23 @@ namespace Application.Services.Chatting
 
         public async Task HandleMessageAsync(SendMessageDto message, Guid conversationId, string userId)
         {
+            if (string.IsNullOrEmpty(message.VoiceFileUrl))
+                throw new ArgumentException("Voice file URL is required for voice messages");
+
             var voiceMessage = new VoiceMessage
             {
                 ConversationId = conversationId,
                 ConversationUserId = message.SenderConversationUserId,
-                VoiceUrl = message.VoiceFileUrl, // Assuming SendMessageDto has this property
-                DurationSeconds = message.DurationSeconds, // <-- FIXED
+                VoiceUrl = message.VoiceFileUrl,
+                DurationSeconds = message.DurationSeconds ?? 0,
                 SentAt = DateTime.UtcNow,
                 IsTranslated = false,
                 TranslatedVoiceUrl = null,
                 Status = MessageStatus.Sent,
             };
-            if (voiceMessage == null) throw new InvalidOperationException("Invalid message type");
 
             // Save the message to the repository
             await _messageRepository.AddAsync(voiceMessage);
-
 
             // Add text-specific processing logic here
             _logger.LogInformation($"Processing voice message: {voiceMessage.VoiceUrl} with duration {voiceMessage.DurationSeconds} seconds");
@@ -76,13 +77,19 @@ namespace Application.Services.Chatting
             if (user == null)
                 throw new KeyNotFoundException("User not found");
 
-            string modelId = (!user.IsTrainedVoice || message.UseRobotVoice == true) ? "DRRamly" : user.VoiceModel.Name;
-            string sourceLanguage = user.NativeLanguage;
+            if (string.IsNullOrEmpty(message.VoiceFileUrl))
+                throw new ArgumentException("Voice file URL is required for voice message translation");
+
+            if (string.IsNullOrEmpty(message.TargetLanguage))
+                throw new ArgumentException("Target language is required for translation");
+
+            string modelId = (!user.IsTrainedVoice || message.UseRobotVoice == true) ? "DRRamly" : user.VoiceModel?.Name ?? "DRRamly";
+            string sourceLanguage = user.NativeLanguage ?? "en";
             string targetLanguage = message.TargetLanguage;
 
             // Get config values directly
-            string aiBaseLink = _configuration["AIBaseLink"];
-            string aiJwtSecret = _configuration["AIJWTSecret"];
+            string aiBaseLink = _configuration["AIBaseLink"] ?? throw new InvalidOperationException("AIBaseLink configuration is missing");
+            string aiJwtSecret = _configuration["AIJWTSecret"] ?? throw new InvalidOperationException("AIJWTSecret configuration is missing");
 
             // Resolve the physical path of the file
             string relativePath = message.VoiceFileUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);

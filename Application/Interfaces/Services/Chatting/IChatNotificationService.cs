@@ -11,5 +11,6 @@ namespace Application.Interfaces.Services.Chatting
         Task NotifyUserJoinedConversation(Guid conversationId, string userId, string displayName);
         Task NotifyUserLeftConversation(Guid conversationId, string userId, string displayName);
         Task NotifyMessageTranslated(Guid conversationId, Guid translatedMessageId, string senderId, string targetLanguage);
+        Task NotifyVoiceTrainingCompleted(string userId, bool success, string modelId, string? errorMessage = null);
     }
 }

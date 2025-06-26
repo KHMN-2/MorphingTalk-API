@@ -32,6 +32,12 @@ namespace Application.Services.Chatting
         }        
         public async Task<string> ProcessMessageAsync(SendMessageDto message, Guid conversationId, string userId)
         {
+            if (message == null)
+                throw new ArgumentNullException(nameof(message));
+            
+            if (string.IsNullOrEmpty(userId))
+                throw new ArgumentException("User ID is required", nameof(userId));
+
             var handler = _handlers.FirstOrDefault(h => h.CanHandle(message.Type));
             var cu = await _conversationUserRepo.GetByIdsAsync(conversationId, userId);
             if (cu == null)
@@ -49,7 +55,8 @@ namespace Application.Services.Chatting
             {
                 if(message.Type == MessageType.Text)
                 {
-                    var Translatedmessage = await handler.HandleTranslationAsync(message, conversationId, userId);
+                    // For text messages, we handle translation directly
+                    await handler.HandleTranslationAsync(message, conversationId, userId);
                 }
                 else
                 {
@@ -59,13 +66,26 @@ namespace Application.Services.Chatting
                         Id = Guid.NewGuid(),
                         ConversationId = conversationId,
                         ConversationUserId = message.SenderConversationUserId,
-                        VoiceUrl = message.VoiceFileUrl, // Assuming taskId is the URL of the translated voice message
+                        VoiceUrl = message.VoiceFileUrl ?? throw new ArgumentException("Voice file URL is required"),
+                        DurationSeconds = message.DurationSeconds ?? 0,
                         SentAt = DateTime.UtcNow,
+                        IsTranslated = false,
+                        Status = MessageStatus.Sent
                     };
+                    
+                    // Save the message to repository first
+                    await _messageRepository.AddAsync(voiceMessage);
+                    
+                    // Cache the message for webhook processing
                     _memoryCache.Set(taskId, voiceMessage, TimeSpan.FromMinutes(30));
+                    
+                    // **IMPORTANT: Send initial notification that voice message was sent and is being translated**
+                    await _chatNotificationService.NotifyMessageSent(conversationId, voiceMessage);
+                    
+                    _logger.LogInformation($"Voice message sent and translation started. TaskId: {taskId}, ConversationId: {conversationId}");
+                    
                     return taskId; // Return the task ID for the translation process
                 }
-
             }
 
             await handler.HandleMessageAsync(message, conversationId, userId);
