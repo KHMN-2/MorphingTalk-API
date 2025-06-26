@@ -21,7 +21,6 @@ namespace Domain.Entities.Chatting
         public string? Description { get; set; } // Optional for group conversations
         public DateTime CreatedAt { get; set; }
         public DateTime LastActivityAt { get; set; }
-
         public ICollection<ConversationUser> ConversationUsers { get; set; }
         public ICollection<Message> Messages { get; set; }
     }

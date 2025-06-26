@@ -1,5 +1,6 @@
 ﻿using Application.DTOs.Chatting;
 using Domain.Entities.Chatting;
+using Domain.Entities.Users;
 using MorphingTalk_API.DTOs.Chatting;
 
 namespace Application.DTOs.Chatting
@@ -16,6 +17,42 @@ namespace Application.DTOs.Chatting
         public MessageSummaryDto LastMessage { get; set; }
         // Add more fields as needed (e.g., Conversation Icon, Admin, etc.)
         public ConversationUserDto LoggedInConversationUser { get; set; }
+        public bool muteNotifications { get; set; } = false; // Optional, if needed
+        public bool UseRobotVoice { get; set; } = true; // Optional, if needed
+        public bool TranslateMessages { get; set; } = false; // Optional, if needed
+
+        public static ConversationDto fromCoversation(Conversation conversation, string userId)
+        {
+            var name = conversation.Name;
+            if (conversation.Type == ConversationType.OneToOne && conversation.ConversationUsers.Count == 2)
+            {
+                var otherUser = conversation.ConversationUsers.First(cu => cu.UserId != userId);
+                name = otherUser.User?.FullName;
+            }
+            var loggedInConversationUser = conversation.ConversationUsers?
+                .FirstOrDefault(cu => cu.UserId == userId);
+            return new ConversationDto
+            {
+                Id = conversation.Id,
+                Name = name,
+                Type = conversation.Type,
+                CreatedAt = conversation.CreatedAt,
+                GroupImageUrl = conversation.GroupImageUrl,
+                Description = conversation.Description,
+                muteNotifications = loggedInConversationUser?.muteNotifications ?? false,
+                UseRobotVoice = loggedInConversationUser?.UseRobotVoice ?? true,
+                TranslateMessages = loggedInConversationUser?.TranslateMessages ?? false,
+                LoggedInConversationUser = loggedInConversationUser != null
+                    ? ConversationUserDto.FromConversationUser(loggedInConversationUser)
+                    : null,
+
+                Users = conversation.ConversationUsers?.Select(cu => ConversationUserDto.FromConversationUser(cu)).ToList(),
+                LastMessage = conversation.Messages?
+                    .OrderByDescending(m => m.SentAt)
+                    .Take(1)
+                    .Select(m => MessageSummaryDto.FromMessage(m)).FirstOrDefault(),
+            };
+        }
     }
     public class ConversationListItemDto
     {
@@ -31,5 +68,7 @@ namespace Application.DTOs.Chatting
         public string? GroupImageUrl { get; set; }   // Optional for group conversations
         public ConversationType Type { get; set; } // "group" or "direct"
         public List<string> UserEmails { get; set; } // Initial user list (can include self)
+        public string? Description { get; set; } // Optional for group conversations
+
     }
 }

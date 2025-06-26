@@ -53,7 +53,7 @@ namespace Application.Services.Authentication
             var otp = new Random().Next(100000, 999999).ToString();
 
             // Send verification email
-            var subject = "Morphinh Talk - Email Verification";
+            var subject = "Morphing Talk - Email Verification";
             var body = $"Your OTP is: {otp}.";
 
             await _emailService.SendEmailAsync(email, subject, body);
@@ -71,7 +71,7 @@ namespace Application.Services.Authentication
             var otp = new Random().Next(100000, 999999).ToString();
 
             // Send verification email
-            var subject = "Morphinh Talk - Reset Password";
+            var subject = "Morphing Talk - Reset Password";
             var body = $@"
         <html>
         <head>
@@ -114,14 +114,14 @@ namespace Application.Services.Authentication
         <body>
             <div class='container'>
                 <div class='header'>
-                    <h2>Morphinh Talk - Reset Password</h2>
+                    <h2>Morphing Talk - Reset Password</h2>
                 </div>
                 <p>Dear {user.FullName},</p>
                 <p>We received a request to reset your password. Please use the following One-Time Password (OTP) to reset your password:</p>
                 <p class='otp'>{otp}</p>
                 <p>This OTP is valid for 5 minutes. If you did not request a password reset, please ignore this email.</p>
                 <div class='footer'>
-                    <p>&copy; 2025 Morphinh Talk. All rights reserved.</p>
+                    <p>&copy; 2025 Morphing Talk. All rights reserved.</p>
                 </div>
             </div>
         </body>
@@ -149,7 +149,7 @@ namespace Application.Services.Authentication
             var otp = new Random().Next(100000, 999999).ToString();
 
             // Send verification email
-            var subject = "Morphinh Talk - Change Email";
+            var subject = "Morphing Talk - Change Email";
             var body = $@"
         <html>
         <head>
@@ -192,14 +192,14 @@ namespace Application.Services.Authentication
         <body>
             <div class='container'>
                 <div class='header'>
-                    <h2>Morphinh Talk - Change Email Verification</h2>
+                    <h2>Morphing Talk - Change Email Verification</h2>
                 </div>
                 <p>Dear {user.FullName},</p>
                 <p>We received a request to change your email address. Please use the following One-Time Password (OTP) to verify your new email address:</p>
                 <p class='otp'>{otp}</p>
                 <p>This OTP is valid for 5 minutes. If you did not request this change, please ignore this email.</p>
                 <div class='footer'>
-                    <p>&copy; 2025 Morphinh Talk. All rights reserved.</p>
+                    <p>&copy; 2025 Morphing Talk. All rights reserved.</p>
                 </div>
             </div>
         </body>

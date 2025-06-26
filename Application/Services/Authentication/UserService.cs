@@ -25,20 +25,23 @@ namespace Application.Services.Authentication
         public async Task<ResponseViewModel<List<UserDto>>> GetAllUsersAsync()
         {
             var users = await _userRepository.GetAllUsersAsync();
-            var userDtos = users.Select(user => new UserDto
-            {
-                Id = user.Id,
-                Email = user.Email,
-                FullName = user.FullName,
-                IsFirstLogin = user.IsFirstLogin,
-                NativeLanguage = user.NativeLanguage,
-                AboutStatus = user.AboutStatus,
-                Gender = user.Gender,
-                ProfilePicPath = user.ProfilePicturePath,
-                PastProfilePicsPath = user.PastProfilePicturePaths
-            }).ToList();
+            var userDtos = users.Select(user => UserDto.FromUser(user)).ToList();
             return new ResponseViewModel<List<UserDto>>(userDtos, "Users retrieved successfully", true, 200);
-        }        public async Task<ResponseViewModel<UserDto?>> GetUserByIdAsync(string? id)
+        }
+        public async Task<ResponseViewModel<LoggedInUserDto>> GetLoggedUserByIdAsync(string? id)
+        {
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return new ResponseViewModel<LoggedInUserDto>(null, "User not found", false, 404);
+            }
+            var userDto = LoggedInUserDto.FromUser(user);
+            return new ResponseViewModel<LoggedInUserDto>(userDto, "User found", true, 200);
+
+        }
+
+
+        public async Task<ResponseViewModel<UserDto>> GetUserByIdAsync(string? id)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -50,19 +53,9 @@ namespace Application.Services.Authentication
             {
                 return new ResponseViewModel<UserDto?>(null, "User not found", false, 404);
             }
-            var userDto = new UserDto
-            {
-                Id = user.Id,
-                Email = user.Email,
-                FullName = user.FullName,
-                IsFirstLogin = user.IsFirstLogin,
-                NativeLanguage = user.NativeLanguage,
-                AboutStatus = user.AboutStatus,
-                Gender = user.Gender,
-                ProfilePicPath = user.ProfilePicturePath,
-                PastProfilePicsPath = user.PastProfilePicturePaths
-            };
-            return new ResponseViewModel<UserDto?>(userDto, "User found", true, 200);
+
+            var userDto = UserDto.FromUser(user);
+            return new ResponseViewModel<UserDto>(userDto, "User found", true, 200);
         }
         public async Task<ResponseViewModel<UserDto?>> GetUserByEmailAsync(string email)
         {
@@ -71,19 +64,9 @@ namespace Application.Services.Authentication
             {
                 return new ResponseViewModel<UserDto?>(null, "User not found", false, 404);
             }
-            var userDto = new UserDto
-            {
-                Id = user.Id,
-                Email = user.Email,
-                FullName = user.FullName,
-                IsFirstLogin = user.IsFirstLogin,
-                NativeLanguage = user.NativeLanguage,
-                AboutStatus = user.AboutStatus,
-                Gender = user.Gender,
-                ProfilePicPath = user.ProfilePicturePath,
-                PastProfilePicsPath = user.PastProfilePicturePaths
-            };
-            return new ResponseViewModel<UserDto?>(userDto, "User found", true, 200);
+
+            var userDto = UserDto.FromUser(user);
+            return new ResponseViewModel<UserDto>(userDto, "User found", true, 200);
         }
 
         public async Task<ResponseViewModel<UserDto?>> UpdateUserAsync(string userId, UpdateUserDto updateUserDto)

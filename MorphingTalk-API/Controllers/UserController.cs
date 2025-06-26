@@ -27,8 +27,9 @@ namespace MorphingTalk_API.Controllers
         [Authorize]
         public async Task<IActionResult> GetLoggedInUser()
         {
-            string? userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            var result = await _userService.GetUserByIdAsync(userId);
+
+            string userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var result = await _userService.GetLoggedUserByIdAsync(userId);
             return Ok(result);
         }
 

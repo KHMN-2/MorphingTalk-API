@@ -24,6 +24,27 @@ namespace Application.DTOs.Chatting
         public string MessageStatus { get; set; } // e.g. "sent", "delivered", "read"
         public string ConversationId { get; set; } // Optional, if needed
 
+        public static MessageSummaryDto FromMessage(Message message)
+        {
+            return new MessageSummaryDto
+            {
+                Id = message.Id,
+                Type = message is TextMessage ? MessageType.Text.ToString() :
+                       message is VoiceMessage ? MessageType.Voice.ToString() : "unknown",
+                SenderId = message.ConversationUser?.UserId,
+                SenderDisplayName = message.ConversationUser?.User?.FullName,
+                Text = message is TextMessage tm ? tm.Content : null,
+                VoiceFileUrl = message is VoiceMessage vm ? (vm.IsTranslated ? vm.TranslatedVoiceUrl : vm.VoiceUrl) : null,
+                Duration = message is VoiceMessage v ? v.DurationSeconds : null,
+                IsTranslated = message is VoiceMessage voiceMsg && voiceMsg.IsTranslated,
+                OriginalVoiceFileUrl = message is VoiceMessage originalVm ? originalVm.VoiceUrl : null,
+                SentAt = message.SentAt,
+                MessageStatus = message.Status.ToString(),
+                ConversationId = message.ConversationId.ToString()
+            };
+
+        }
+
     }
     public class SendMessageDto
     {

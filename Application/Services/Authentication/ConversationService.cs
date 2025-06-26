@@ -32,61 +32,7 @@ namespace Application.Services.Authentication
         {
             var conversations = await _conversationRepo.GetConversationsForUserAsync(userId);
 
-            var result = conversations.Select(conversation =>
-            {
-                var name = conversation.Name;
-                if (conversation.Type == ConversationType.OneToOne && conversation.ConversationUsers.Count == 2)
-                {
-                    var otherUser = conversation.ConversationUsers.First(cu => cu.UserId != userId);
-                    name = otherUser.User?.FullName;
-                }
-                return new ConversationDto
-                {
-                    Id = conversation.Id,
-                    Name = name,
-                    Type = conversation.Type,
-                    CreatedAt = conversation.CreatedAt,
-                    GroupImageUrl = conversation.GroupImageUrl,
-                    Description = conversation.Description,
-                    LoggedInConversationUser = conversation.ConversationUsers?
-                .Where(cu => cu.UserId == userId)
-                .Select(cu => new ConversationUserDto
-                {
-                    ConversationUserId = cu.Id,
-                    UserId = cu.UserId,
-                    DisplayName = cu.User?.FullName,
-                    Role = cu.Role.ToString(),
-                    ProfileImagePath = cu.User?.ProfilePicturePath,
-                    bio = cu.User?.AboutStatus,
-                }).FirstOrDefault(),
-                    Users = conversation.ConversationUsers?.Select(cu => new ConversationUserDto
-                    {
-                        ConversationUserId = cu.Id,
-                        UserId = cu.UserId,
-                        DisplayName = cu.User?.FullName,
-                        Role = cu.Role.ToString(),
-                        ProfileImagePath = cu.User?.ProfilePicturePath,
-                        bio = cu.User?.AboutStatus,
-                    }).ToList(),
-                    LastMessage = conversation.Messages?
-                        .OrderByDescending(m => m.SentAt)
-                        .Take(1)
-                        .Select(m => new MessageSummaryDto
-                        {
-                            Id = m.Id,
-                            Type = m is TextMessage ? MessageType.Text.ToString() : m is VoiceMessage ? MessageType.Voice.ToString() : "unknown",
-                            SenderId = m.ConversationUser?.UserId,
-                            SenderDisplayName = m.ConversationUser?.User?.FullName,
-                            Text = m is TextMessage tm ? tm.Content : null,
-
-                            VoiceFileUrl = m is VoiceMessage vm ? (vm.IsTranslated ? vm.TranslatedVoiceUrl : vm.VoiceUrl) : null,
-                            Duration = m is VoiceMessage v ? v.DurationSeconds : null,
-                            SentAt = m.SentAt,
-                            MessageStatus = m.Status.ToString(),
-                        }).FirstOrDefault(),
-
-                };
-            }).ToList();
+            var result = conversations.Select(conversation => ConversationDto.fromCoversation(conversation,userId)).ToList();
 
             return new ResponseViewModel<ICollection<ConversationDto>>(result, "Conversations retrieved successfully.", true, 200);
         }
@@ -112,24 +58,7 @@ namespace Application.Services.Authentication
                 var existingConversation = await _conversationRepo.GetOneToOneConversationAsync(creatorUserId, friendUser.Id);
                 if (existingConversation != null)
                 {
-
-                    var res = new ConversationDto
-                    {
-                        Id = existingConversation.Id,
-                        Name = friendUser.FullName,
-                        Type = existingConversation.Type,
-                        CreatedAt = existingConversation.CreatedAt,
-
-                        Users = existingConversation.ConversationUsers.Select(cu => new ConversationUserDto
-                        {
-                            ConversationUserId = cu.Id,
-                            UserId = cu.UserId,
-                            DisplayName = cu.User?.FullName,
-                            Role = cu.Role.ToString(),
-                            ProfileImagePath = cu.User?.ProfilePicturePath,
-                            bio = cu.User?.AboutStatus,
-                        }).ToList(),
-                    };
+                    var res = ConversationDto.fromCoversation(existingConversation, creatorUserId);
                     return new ResponseViewModel<ConversationDto>(res, "One-to-one conversation already exists.", true, 200);
                 }
 
@@ -156,39 +85,17 @@ namespace Application.Services.Authentication
                     .Append(creatorUserId)
                     .Distinct()
                     .Select(userId => new ConversationUser { UserId = userId, Role = userId == creatorUserId ? Roles.Admin : Roles.Member })
-                    .ToList()
+                    .ToList(),
+                GroupImageUrl = dto.GroupImageUrl,
+                Description = dto.Description
             };
 
             var created = await _conversationRepo.AddAsync(conversation);
 
+            var created_updated = await _conversationRepo.GetByIdAsync(created.Id);
+
             // Optional: project to DTO
-            var result = new ConversationDto
-            {
-                Id = created.Id,
-                Name = created.Name,
-                Type = created.Type,
-                CreatedAt = created.CreatedAt,
-                LoggedInConversationUser = conversation.ConversationUsers?
-                .Where(cu => cu.UserId == creatorUserId)
-                .Select(cu => new ConversationUserDto
-                {
-                    ConversationUserId = cu.Id,
-                    UserId = cu.UserId,
-                    DisplayName = cu.User?.FullName,
-                    Role = cu.Role.ToString(),
-                    ProfileImagePath = cu.User?.ProfilePicturePath,
-                    bio = cu.User?.AboutStatus,
-                }).FirstOrDefault(),
-                Users = conversation.ConversationUsers?.Select(cu => new ConversationUserDto
-                {
-                    ConversationUserId = cu.Id,
-                    UserId = cu.UserId,
-                    DisplayName = cu.User?.FullName,
-                    Role = cu.Role.ToString(),
-                    ProfileImagePath = cu.User?.ProfilePicturePath,
-                    bio = cu.User?.AboutStatus,
-                }).ToList()
-            };
+            var result = ConversationDto.fromCoversation(created_updated, creatorUserId);
 
             return new ResponseViewModel<ConversationDto>(result, "Conversation created successfully.", true, 201);
         }
@@ -210,49 +117,7 @@ namespace Application.Services.Authentication
                 image = otherUser.User?.ProfilePicturePath;
 
             }
-            var result = new ConversationDto
-            {
-                Id = conversation.Id,
-                Name = name,
-                Type = conversation.Type,
-                CreatedAt = conversation.CreatedAt,
-                GroupImageUrl = image,
-                Description = conversation.Description,
-                LoggedInConversationUser = conversation.ConversationUsers?
-                .Where(cu => cu.UserId == userId)
-                .Select(cu => new ConversationUserDto
-                {
-                    ConversationUserId = cu.Id,
-                    UserId = cu.UserId,
-                    DisplayName = cu.User?.FullName,
-                    Role = cu.Role.ToString(),
-                    ProfileImagePath = cu.User?.ProfilePicturePath,
-                    bio = cu.User?.AboutStatus,
-                }).FirstOrDefault(),
-                Users = conversation.ConversationUsers?.Select(cu => new ConversationUserDto
-                {
-                    ConversationUserId = cu.Id,
-                    UserId = cu.UserId,
-                    DisplayName = cu.User?.FullName,
-                    Role = cu.Role.ToString(),
-                    ProfileImagePath = cu.User?.ProfilePicturePath,
-                    bio = cu.User?.AboutStatus,
-                }).ToList(),
-                LastMessage = conversation.Messages?
-                    .OrderByDescending(m => m.SentAt)
-                    .Take(1)
-                    .Select(m => new MessageSummaryDto
-                    {
-                        Id = m.Id,
-                        Type = m is TextMessage ? MessageType.Text.ToString() : m is VoiceMessage ? MessageType.Text.ToString() : "unknown",
-                        SenderId = m.ConversationUser?.UserId,
-                        SenderDisplayName = m.ConversationUser?.User?.FullName,
-                        Text = m is TextMessage tm ? tm.Content : null,
-                        VoiceFileUrl = m is VoiceMessage vm ? (vm.IsTranslated ? vm.TranslatedVoiceUrl : vm.VoiceUrl) : null,
-                        Duration = m is VoiceMessage v ? v.DurationSeconds : null,
-                        SentAt = m.SentAt
-                    }).FirstOrDefault()
-            };
+            var result = ConversationDto.fromCoversation(conversation, userId);
             return new ResponseViewModel<ConversationDto>(result, "Conversation retrieved successfully.", true, 200);
         }
 
