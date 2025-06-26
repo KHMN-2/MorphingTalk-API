@@ -13,6 +13,7 @@ namespace Application.Interfaces.Repositories
         Task<List<Message>> GetMessagesForConversationAsync(Guid conversationId, int count = 50, int skip = 0);
         Task<List<Message>> GetMessagesForUserInConversationAsync(Guid conversationId, string userId, int count = 50, int skip = 0);
         Task<Message> AddAsync(Message message);
+        Task<Message> UpdateAsync(Message message);
         Task DeleteAsync(Guid id);
     }
 }

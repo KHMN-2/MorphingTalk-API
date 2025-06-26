@@ -93,12 +93,32 @@ namespace Application.Services.Chatting
                     await resultResponse.Content.CopyToAsync(fs);
                 }
                 message.IsTranslated = true;
-                // Here you can update your message or database with the new file path if needed
                 message.TranslatedVoiceUrl = $"/translated_audio/{fileName}";
 
-                // Save the message to the repository
-                await _messageRepository.AddAsync(message);
-                // Notify connected clients about the new translated voice message
+                // Check if message exists in database, if not add it, otherwise update it
+                var existingMessage = await _messageRepository.GetByIdAsync(message.Id);
+                if (existingMessage == null)
+                {
+                    // Message was only cached, save it to database now
+                    await _messageRepository.AddAsync(message);
+                }
+                else
+                {
+                    // Message exists, update it with translation details
+                    await _messageRepository.UpdateAsync(message);
+                }
+                
+                // **IMPORTANT: Send TWO notifications for translation completion**
+                
+                // 1. Notify that the message translation is complete (clients can update UI)
+                await _chatNotificationService.NotifyMessageTranslated(
+                    message.ConversationId, 
+                    message.Id, 
+                    message.ConversationUser?.UserId ?? "Unknown",
+                    payload.RequestId // Using requestId as context, could be target language
+                );
+                
+                // 2. Send updated message with translated voice URL (clients get the new file URL)
                 await _chatNotificationService.NotifyMessageSent(message.ConversationId, message);
 
                 // Return the relative path or URL to the saved file

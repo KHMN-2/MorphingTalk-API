@@ -52,6 +52,20 @@ public class MessageRepository : IMessageRepository
         return message;
     }
 
+    public async Task<Message> UpdateAsync(Message message)
+    {
+        var existingMessage = await _context.Messages.FindAsync(message.Id);
+        if (existingMessage == null)
+        {
+            throw new KeyNotFoundException("Message not found");
+        }
+
+        // Update the existing message properties
+        _context.Entry(existingMessage).CurrentValues.SetValues(message);
+        await _context.SaveChangesAsync();
+        return existingMessage;
+    }
+
     public async Task DeleteAsync(Guid id)
     {
         var message = await _context.Messages.FindAsync(id);

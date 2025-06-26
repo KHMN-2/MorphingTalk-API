@@ -124,6 +124,18 @@ public class ChattingController : ControllerBase
     public async Task<IActionResult> SendMessage(Guid conversationId, [FromBody] SendMessageDto dto)
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return StatusCode(StatusCodes.Status401Unauthorized,
+                new ResponseViewModel<string>(null, "User not authenticated", false, StatusCodes.Status401Unauthorized));
+        }
+
+        if (dto == null)
+        {
+            return StatusCode(StatusCodes.Status400BadRequest,
+                new ResponseViewModel<string>(null, "Message data is required", false, StatusCodes.Status400BadRequest));
+        }
+
         try
         {
             var result = await _messageService.ProcessMessageAsync(dto, conversationId, userId);

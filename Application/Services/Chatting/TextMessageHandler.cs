@@ -27,6 +27,9 @@ namespace Application.Services.Chatting
 
         public async Task HandleMessageAsync(SendMessageDto message, Guid conversationId, string userId)
         {
+            if (string.IsNullOrEmpty(message.Text))
+                throw new ArgumentException("Text content is required for text messages");
+
             var textMessage = new TextMessage
             {
                 Content = message.Text,
@@ -36,21 +39,40 @@ namespace Application.Services.Chatting
                 Status = MessageStatus.Sent,
             };
 
-            if (textMessage == null) throw new InvalidOperationException("Invalid message type");
-
             // Save the message to the repository
             await _messageRepository.AddAsync(textMessage);
-
-
 
             // Add text-specific processing logic here
             _logger.LogInformation($"Processing text message: {textMessage.Content}");
             await Task.CompletedTask;
         }
 
-        public Task<string> HandleTranslationAsync(SendMessageDto message, Guid conversationId, string userId)
+        public async Task<string> HandleTranslationAsync(SendMessageDto message, Guid conversationId, string userId)
         {
-            throw new NotImplementedException();
+            // For text messages, we process the translation directly
+            // and don't need to return a task ID since translation is immediate
+            
+            if (string.IsNullOrEmpty(message.Text))
+                throw new ArgumentException("Text content is required for text messages");
+            
+            // Create the text message with the original text
+            var textMessage = new TextMessage
+            {
+                Content = message.Text,
+                SentAt = DateTime.UtcNow,
+                ConversationUserId = message.SenderConversationUserId,
+                ConversationId = conversationId,
+                Status = MessageStatus.Sent,
+            };
+
+            // Save the message to the repository
+            await _messageRepository.AddAsync(textMessage);
+
+            _logger.LogInformation($"Processing text message with translation: {textMessage.Content}");
+            
+            // For text messages, we return empty string since translation is handled immediately
+            // and doesn't require a task ID
+            return string.Empty;
         }
     }
 }
