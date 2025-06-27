@@ -15,6 +15,7 @@ namespace Domain.Entities.AIModels
     public class UserVoiceModel
     {
         public string Id { get; set; }
+        public string TaskId { get; set; }
         public string Name { get; set; }
         public DateTime CreatedAt { get; set; }
         public UserVoiceModelStatus Status { get; set; }

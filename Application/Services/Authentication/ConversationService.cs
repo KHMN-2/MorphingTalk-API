@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Application.DTOs;
 using Application.DTOs.Chatting;
 using Application.Interfaces.Repositories;
+using Application.Interfaces.Services;
 using Application.Interfaces.Services.Chatting;
 using Domain.Entities.Chatting;
 using Domain.Entities.Users;
@@ -19,20 +20,36 @@ namespace Application.Services.Authentication
         private readonly IUserRepository _userRepo;
         private readonly IChatNotificationService _chatNotificationService;
         private readonly IConversationUserRepository _conversationUserRepo;
+        private readonly IFriendshipService _friendshipService;
 
 
-        public ConversationService(IConversationRepository conversationRepo, IUserRepository userRepo, IChatNotificationService chatNotificationService, IConversationUserRepository conversationUserRepo)
+        public ConversationService(IConversationRepository conversationRepo, IUserRepository userRepo, IChatNotificationService chatNotificationService, IConversationUserRepository conversationUserRepo, IFriendshipService friendshipService)
         {
             _conversationRepo = conversationRepo;
             _userRepo = userRepo;
             _chatNotificationService = chatNotificationService;
             _conversationUserRepo = conversationUserRepo;
+            _friendshipService = friendshipService;
         }
         public async Task<ResponseViewModel<ICollection<ConversationDto>>> GetConversationsForUserAsync(string? userId)
         {
             var conversations = await _conversationRepo.GetConversationsForUserAsync(userId);
 
-            var result = conversations.Select(conversation => ConversationDto.fromCoversation(conversation,userId)).ToList();
+            var result = new List<ConversationDto>();
+            
+            foreach (var conversation in conversations)
+            {
+                var dto = ConversationDto.fromCoversation(conversation, userId);
+                
+                // Check if other user is blocked in one-to-one conversations
+                if (conversation.Type == ConversationType.OneToOne)
+                {
+                    var otherUser = conversation.ConversationUsers.First(cu => cu.UserId != userId);
+                    dto.IsOtherUserBlocked = await _friendshipService.IsUserBlockedAsync(userId, otherUser.UserId);
+                }
+                
+                result.Add(dto);
+            }
 
             return new ResponseViewModel<ICollection<ConversationDto>>(result, "Conversations retrieved successfully.", true, 200);
         }
@@ -53,6 +70,13 @@ namespace Application.Services.Authentication
                 if (creatorUserId == friendUser.Id)
                 {
                     return new ResponseViewModel<ConversationDto>(null, "Cannot create a conversation with the same user.", false, 400);
+                }
+
+                // Check if users are blocked
+                var isBlocked = await _friendshipService.IsUserBlockedAsync(creatorUserId, friendUser.Id);
+                if (isBlocked)
+                {
+                    return new ResponseViewModel<ConversationDto>(null, "Cannot create conversation with blocked user.", false, 403);
                 }
 
                 var existingConversation = await _conversationRepo.GetOneToOneConversationAsync(creatorUserId, friendUser.Id);
@@ -110,14 +134,18 @@ namespace Application.Services.Authentication
 
             var name = conversation.Name;
             var image = conversation.GroupImageUrl;
+            var result = ConversationDto.fromCoversation(conversation, userId);
+            
             if (conversation.Type == ConversationType.OneToOne)
             {
                 var otherUser = conversation.ConversationUsers.First(cu => cu.UserId != userId);
                 name = otherUser.User?.FullName;
                 image = otherUser.User?.ProfilePicturePath;
 
+                // Check if the other user is blocked
+                result.IsOtherUserBlocked = await _friendshipService.IsUserBlockedAsync(userId, otherUser.UserId);
             }
-            var result = ConversationDto.fromCoversation(conversation, userId);
+            
             return new ResponseViewModel<ConversationDto>(result, "Conversation retrieved successfully.", true, 200);
         }
 

@@ -128,5 +128,103 @@ namespace Application.Services
 
             return new ResponseViewModel<string>("Friendship removed successfully", "Friend removed successfully", true, 200);
         }
+
+        public async Task<ResponseViewModel<string>> BlockUserAsync(string userId, string userToBlockEmail)
+        {
+            User userToBlock;
+            try
+            {
+                userToBlock = await _userRepository.GetUserByEmailAsync(userToBlockEmail);
+            }
+            catch (Exception)
+            {
+                return new ResponseViewModel<string>(null, "User not found", false, 404);
+            }
+
+            var userToBlockId = userToBlock.Id;
+
+            if (userId == userToBlockId)
+            {
+                return new ResponseViewModel<string>(null, "Cannot block yourself", false, 400);
+            }
+
+            // Check if already blocked
+            var isBlocked = await _friendshipRepository.IsBlockedAsync(userId, userToBlockId);
+            if (isBlocked)
+            {
+                return new ResponseViewModel<string>(null, "User is already blocked", false, 400);
+            }
+
+            // Get existing friendship or create new one
+            var existingFriendship = await _friendshipRepository.GetFriendshipAsync(userId, userToBlockId);
+            
+            if (existingFriendship != null)
+            {
+                // Update existing relationship to blocked
+                existingFriendship.IsBlocked = true;
+                existingFriendship.UpdatedAt = DateTime.UtcNow;
+                await _friendshipRepository.UpdateFriendRelationAsync(existingFriendship);
+            }
+            else
+            {
+                // Create new blocked relationship
+                if (userId.CompareTo(userToBlockId) > 0)
+                {
+                    var temp = userId;
+                    userId = userToBlockId;
+                    userToBlockId = temp;
+                }
+
+                var blockedRelationship = new Friendship
+                {
+                    UserId1 = userId,
+                    UserId2 = userToBlockId,
+                    IsBlocked = true,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                await _friendshipRepository.AddFriendRelationAsync(blockedRelationship);
+            }
+
+            return new ResponseViewModel<string>("User blocked successfully", "User blocked successfully", true, 200);
+        }
+
+        public async Task<ResponseViewModel<string>> UnblockUserAsync(string userId, string userToUnblockEmail)
+        {
+            User userToUnblock;
+            try
+            {
+                userToUnblock = await _userRepository.GetUserByEmailAsync(userToUnblockEmail);
+            }
+            catch (Exception)
+            {
+                return new ResponseViewModel<string>(null, "User not found", false, 404);
+            }
+
+            var userToUnblockId = userToUnblock.Id;
+
+            // Check if blocked
+            var isBlocked = await _friendshipRepository.IsBlockedAsync(userId, userToUnblockId);
+            if (!isBlocked)
+            {
+                return new ResponseViewModel<string>(null, "User is not blocked", false, 400);
+            }
+
+            // Get existing friendship
+            var existingFriendship = await _friendshipRepository.GetFriendshipAsync(userId, userToUnblockId);
+            
+            if (existingFriendship != null)
+            {
+                // Remove the blocked relationship entirely since there's no friend relationship
+                await _friendshipRepository.RemoveFriendRelationAsync(existingFriendship);
+            }
+
+            return new ResponseViewModel<string>("User unblocked successfully", "User unblocked successfully", true, 200);
+        }
+
+        public async Task<bool> IsUserBlockedAsync(string userId, string otherUserId)
+        {
+            return await _friendshipRepository.IsBlockedAsync(userId, otherUserId);
+        }
     }
 } 

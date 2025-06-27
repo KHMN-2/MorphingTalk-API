@@ -69,14 +69,14 @@ namespace Application.Services.Authentication
             return new ResponseViewModel<UserDto>(userDto, "User found", true, 200);
         }
 
-        public async Task<ResponseViewModel<UserDto?>> UpdateUserAsync(string userId, UpdateUserDto updateUserDto)
+        public async Task<ResponseViewModel<LoggedInUserDto?>> UpdateUserAsync(string userId, UpdateUserDto updateUserDto)
         {
             try
             {
                 var user = await _userRepository.GetUserByIdAsync(userId);
                 if (user == null)
                 {
-                    return new ResponseViewModel<UserDto?>(null, "User not found", false, 404);
+                    return new ResponseViewModel<LoggedInUserDto?>(null, "User not found", false, 404);
                 }
 
                 // Update only non-null fields
@@ -89,14 +89,22 @@ namespace Application.Services.Authentication
                 if (!string.IsNullOrWhiteSpace(updateUserDto.NativeLanguage))
                     user.NativeLanguage = updateUserDto.NativeLanguage;
                 
-                if (updateUserDto.AboutStatus != null)
+                if (string.IsNullOrEmpty(updateUserDto.ProfilePicturePath))
+                    user.ProfilePicturePath = updateUserDto.ProfilePicturePath;
+
+                if (!string.IsNullOrWhiteSpace(updateUserDto.AboutStatus))
                     user.AboutStatus = updateUserDto.AboutStatus;
+
+                if(updateUserDto.MuteNotifications != null)
+                    user.MuteNotifications = updateUserDto.MuteNotifications.Value;
+
+
 
                 user.LastUpdatedOn = DateTime.UtcNow;
 
                 var updatedUser = await _userRepository.UpdateUserAsync(user);
 
-                var userDto = new UserDto
+                var userDto = new LoggedInUserDto
                 {
                     Id = updatedUser.Id,
                     Email = updatedUser.Email,
@@ -105,15 +113,19 @@ namespace Application.Services.Authentication
                     AboutStatus = updatedUser.AboutStatus,
                     Gender = updatedUser.Gender,
                     ProfilePicPath = updatedUser.ProfilePicturePath,
+                    MuteNotifications = updatedUser.MuteNotifications,
+                    IsTrainedVoice = updatedUser.IsTrainedVoice,
+                    IsFirstLogin = updatedUser.IsFirstLogin,
                 };
 
-                return new ResponseViewModel<UserDto?>(userDto, "User updated successfully", true, 200);
+                return new ResponseViewModel<LoggedInUserDto?>(userDto, "User updated successfully", true, 200);
             }
             catch (Exception ex)
             {
-                return new ResponseViewModel<UserDto?>(null, $"Error updating user: {ex.Message}", false, 500);
+                return new ResponseViewModel<LoggedInUserDto?>(null, $"Error updating user: {ex.Message}", false, 500);
             }
-        }        public async Task<ResponseViewModel<UserDto?>> UpdateUserProfilePictureAsync(string userId, UpdateUserProfileDto updateUserProfileDto)
+        }    
+        public async Task<ResponseViewModel<UserDto?>> UpdateUserProfilePictureAsync(string userId, UpdateUserProfileDto updateUserProfileDto)
         {
             try
             {

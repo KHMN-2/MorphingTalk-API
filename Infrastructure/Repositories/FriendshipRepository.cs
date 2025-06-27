@@ -38,6 +38,11 @@ namespace Infrastructure.Repositories
             await _context.Friendships.AddAsync(friendRelation);
             await _context.SaveChangesAsync();
         }
+        public async Task UpdateFriendRelationAsync(Friendship friendRelation)
+        {
+            _context.Friendships.Update(friendRelation);
+            await _context.SaveChangesAsync();
+        }
         public async Task RemoveFriendRelationAsync(Friendship friendRelation)
         {
             _context.Friendships.Remove(friendRelation);
@@ -55,6 +60,8 @@ namespace Infrastructure.Repositories
         {
             return await _context.Friendships
                 .Where(fr => (fr.UserId1 == userId || fr.UserId2 == userId)  && fr.IsBlocked)
+                .Include(fr => fr.User1)
+                .Include(fr => fr.User2)
                 .ToListAsync();
         }
 

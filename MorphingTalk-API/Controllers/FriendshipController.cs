@@ -49,5 +49,21 @@ namespace MorphingTalk_API.Controllers
             var response = await _friendshipService.RemoveFriendAsync(userId, friendEmail);
             return StatusCode(response.StatusCode, response);
         }
+
+        [HttpPost("block/{userEmail}")]
+        public async Task<ActionResult<ResponseViewModel<string>>> BlockUser(string userEmail)
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var response = await _friendshipService.BlockUserAsync(userId, userEmail);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpPost("unblock/{userEmail}")]
+        public async Task<ActionResult<ResponseViewModel<string>>> UnblockUser(string userEmail)
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var response = await _friendshipService.UnblockUserAsync(userId, userEmail);
+            return StatusCode(response.StatusCode, response);
+        }
     }
 }

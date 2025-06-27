@@ -123,7 +123,7 @@ namespace MorphingTalk_API.Controllers
                 user.IsTrainedVoice = false; // Training in progress
                 user.VoiceModel = new UserVoiceModel
                 {
-                    Id = taskId,
+                    TaskId = taskId,
                     Name = user.FullName + "_" + user.NativeLanguage,
                     CreatedAt = DateTime.UtcNow,
                     Status = UserVoiceModelStatus.Training

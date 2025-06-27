@@ -20,6 +20,7 @@ namespace Application.DTOs.Chatting
         public bool muteNotifications { get; set; } = false; // Optional, if needed
         public bool UseRobotVoice { get; set; } = true; // Optional, if needed
         public bool TranslateMessages { get; set; } = false; // Optional, if needed
+        public bool IsOtherUserBlocked { get; set; } = false; // Only relevant for one-to-one conversations
 
         public static ConversationDto fromCoversation(Conversation conversation, string userId)
         {
