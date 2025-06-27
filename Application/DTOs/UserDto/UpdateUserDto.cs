@@ -15,5 +15,9 @@ namespace Application.DTOs.UserDto
         
         [StringLength(500, ErrorMessage = "About status cannot exceed 500 characters")]
         public string? AboutStatus { get; set; }
+
+        [Url(ErrorMessage = "Profile picture path must be a valid URL")]
+        public string? ProfilePicturePath { get; set; }
+        public bool? MuteNotifications { get; set; } = false; // Optional, if needed
     }
 }

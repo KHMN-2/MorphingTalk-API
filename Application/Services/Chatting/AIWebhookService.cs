@@ -141,7 +141,7 @@ namespace Application.Services.Chatting
                     return new ResponseViewModel<string>("", "User not found for this training task", false, StatusCodes.Status404NotFound);
                 }
 
-                if (payload.Success)
+                if (payload.Success == "true")
                 {
                     // Training completed successfully
                     user.IsTrainedVoice = true;

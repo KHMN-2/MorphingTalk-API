@@ -35,7 +35,7 @@ namespace MorphingTalk_API.Controllers
         }
 
         [HttpPost("train")]
-        public async Task<IActionResult> TrainVoiceModel(IFormFile file, [FromForm] string? model_id, [FromForm] string? speaker_lang)
+        public async Task<IActionResult> TrainVoiceModel(IFormFile file)
         {
             try
             {
@@ -57,8 +57,6 @@ namespace MorphingTalk_API.Controllers
                 }
 
                 // Use defaults if not provided
-                string modelId = string.IsNullOrEmpty(model_id) ? $"voice_model_{userId}_{DateTime.UtcNow:yyyyMMddHHmmss}" : model_id;
-                string speakerLang = string.IsNullOrEmpty(speaker_lang) ? user.NativeLanguage ?? "en" : speaker_lang;
 
                 // Validate file type
                 var allowedExtensions = new[] { ".wav", ".m4a", ".mp3", ".flac" };
@@ -99,8 +97,8 @@ namespace MorphingTalk_API.Controllers
                 
                 fileContent.Headers.ContentType = new MediaTypeHeaderValue(mimeType);
                 form.Add(fileContent, "file", file.FileName);
-                form.Add(new StringContent(modelId), "model_id");
-                form.Add(new StringContent(speakerLang), "speaker_lang");
+                form.Add(new StringContent(userId), "model_id");
+                form.Add(new StringContent(user.NativeLanguage ?? "en"), "speaker_lang");
 
                 // Send training request to AI service
                 var url = $"{aiBaseLink}/voice/train";
@@ -126,8 +124,9 @@ namespace MorphingTalk_API.Controllers
                 user.VoiceModel = new UserVoiceModel
                 {
                     Id = taskId,
-                    Name = modelId,
-                    CreatedAt = DateTime.UtcNow
+                    Name = user.FullName + "_" + user.NativeLanguage,
+                    CreatedAt = DateTime.UtcNow,
+                    Status = UserVoiceModelStatus.Training
                 };
 
                 await _userRepository.UpdateUserAsync(user);
@@ -135,7 +134,7 @@ namespace MorphingTalk_API.Controllers
                 return Ok(new ResponseViewModel<object>(
                     new { 
                         taskId = taskId, 
-                        modelId = modelId,
+                        name = user.VoiceModel.Name,
                         status = "training_started",
                         message = "Voice training started successfully. You will be notified when training is complete."
                     }, 
@@ -173,7 +172,8 @@ namespace MorphingTalk_API.Controllers
                     {
                         id = user.VoiceModel.Id,
                         name = user.VoiceModel.Name,
-                        createdAt = user.VoiceModel.CreatedAt
+                        createdAt = user.VoiceModel.CreatedAt,
+                        status = user.VoiceModel.Status
                     } : null,
                     status = user.IsTrainedVoice ? "completed" : 
                             user.VoiceModel != null ? "training" : "not_started"

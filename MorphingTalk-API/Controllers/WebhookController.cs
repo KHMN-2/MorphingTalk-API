@@ -32,15 +32,16 @@ namespace MorphingTalk_API.Controllers
           
 
             return StatusCode(response.StatusCode, response);
-        }        [HttpPost("training-result")]
+        }        
+        [HttpPost("training-result")]
         public async Task<IActionResult> HandleTrainingResult([FromBody] AIWebhookTrainingPayloadDto payload)
         {
             _logger.LogInformation("Received training webhook:");
             _logger.LogInformation($"RequestId: {payload?.RequestId}");
             _logger.LogInformation($"ModelId: {payload?.modelId}");
-            _logger.LogInformation($"Success (string): {payload?.success}");
+            //_logger.LogInformation($"Success (string): {payload?.success}");
             _logger.LogInformation($"Success (boolean): {payload?.Success}");
-            _logger.LogInformation($"ErrorMessage: {payload?.errorMessage}");
+            _logger.LogInformation($"ErrorMessage: {payload?.ErrorMessage}");
 
             if (payload == null)
             {
@@ -51,7 +52,7 @@ namespace MorphingTalk_API.Controllers
 
             var response = await _webhookService.HandleVoiceTrainingWebhookAsync(payload);
             _logger.LogInformation($"Webhook processing result: {response.Success}, Message: {response.Message}");
-            
+
             return StatusCode(response.StatusCode, response);
         }
 

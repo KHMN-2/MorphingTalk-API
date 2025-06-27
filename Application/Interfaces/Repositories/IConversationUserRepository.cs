@@ -16,6 +16,9 @@ namespace Application.Interfaces.Repositories
         // Add user to conversation
         public Task<ConversationUser> AddAsync(ConversationUser conversationUser);
 
+        // Update user conversation settings
+        public Task<ConversationUser> UpdateAsync(ConversationUser conversationUser);
+
         // Remove user from conversation
         public Task RemoveAsync(Guid conversationId, string userId);
 

@@ -163,5 +163,113 @@ namespace Application.Services.Authentication
             return new ResponseViewModel<string>(null, "User added to conversation successfully.", true, 200);
         }
 
+        public async Task<ResponseViewModel<ConversationDto>> UpdateConversationAsync(Guid conversationId, UpdateConversationDto dto, string? userId)
+        {
+            // Check if conversation exists
+            var conversation = await _conversationRepo.GetByIdAsync(conversationId);
+            if (conversation == null)
+            {
+                return new ResponseViewModel<ConversationDto>(null, "Conversation not found.", false, 404);
+            }
+
+            // Check if user is part of the conversation
+            if (userId == null || !conversation.ConversationUsers.Any(cu => cu.UserId == userId))
+            {
+                return new ResponseViewModel<ConversationDto>(null, "User not part of this conversation.", false, 403);
+            }
+
+            var userConversation = conversation.ConversationUsers.FirstOrDefault(cu => cu.UserId == userId);
+            if (userConversation == null)
+            {
+                return new ResponseViewModel<ConversationDto>(null, "User conversation data not found.", false, 404);
+            }
+
+            // Determine if this is a conversation-level update or user-level update
+            bool hasConversationLevelUpdates = !string.IsNullOrEmpty(dto.Name) || 
+                                               dto.GroupImageUrl != null || 
+                                               dto.Description != null;
+            
+            bool hasUserLevelUpdates = dto.UseRobotVoice.HasValue || 
+                                       dto.TranslateMessages.HasValue || 
+                                       dto.MuteNotifications.HasValue;
+
+            // Handle conversation-level updates (require admin permissions)
+            if (hasConversationLevelUpdates)
+            {
+                // Check if user has permission to update conversation (only admins can update group conversations)
+                if (conversation.Type == ConversationType.Group && userConversation.Role != Roles.Admin)
+                {
+                    return new ResponseViewModel<ConversationDto>(null, "Only admins can update group conversation details.", false, 403);
+                }
+
+                // One-to-one conversations cannot have conversation-level updates
+                if (conversation.Type == ConversationType.OneToOne)
+                {
+                    return new ResponseViewModel<ConversationDto>(null, "One-to-one conversation details cannot be updated.", false, 400);
+                }
+
+                // Update conversation properties
+                if (!string.IsNullOrEmpty(dto.Name))
+                {
+                    conversation.Name = dto.Name;
+                }
+
+                if (dto.GroupImageUrl != null) // Allow setting to null/empty
+                {
+                    conversation.GroupImageUrl = dto.GroupImageUrl;
+                }
+
+                if (dto.Description != null) // Allow setting to null/empty
+                {
+                    conversation.Description = dto.Description;
+                }
+
+                conversation.LastActivityAt = DateTime.UtcNow;
+
+                // Save conversation changes
+                await _conversationRepo.UpdateAsync(conversation);
+            }
+
+            // Handle user-level updates (any user can update their own settings)
+            if (hasUserLevelUpdates)
+            {
+                if (dto.UseRobotVoice.HasValue)
+                {
+                    userConversation.UseRobotVoice = dto.UseRobotVoice.Value;
+                }
+
+                if (dto.TranslateMessages.HasValue)
+                {
+                    userConversation.TranslateMessages = dto.TranslateMessages.Value;
+                }
+
+                if (dto.MuteNotifications.HasValue)
+                {
+                    userConversation.muteNotifications = dto.MuteNotifications.Value;
+                }
+
+                // Save user conversation settings
+                await _conversationUserRepo.UpdateAsync(userConversation);
+            }
+
+            // If no updates were provided
+            if (!hasConversationLevelUpdates && !hasUserLevelUpdates)
+            {
+                return new ResponseViewModel<ConversationDto>(null, "No updates provided.", false, 400);
+            }
+
+            // Refresh conversation data
+            var updatedConversation = await _conversationRepo.GetByIdAsync(conversationId);
+            var result = ConversationDto.fromCoversation(updatedConversation, userId);
+
+            string message = hasConversationLevelUpdates && hasUserLevelUpdates 
+                ? "Conversation and user settings updated successfully." 
+                : hasConversationLevelUpdates 
+                    ? "Conversation updated successfully." 
+                    : "User settings updated successfully.";
+
+            return new ResponseViewModel<ConversationDto>(result, message, true, 200);
+        }
+
     }
 }

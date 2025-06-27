@@ -33,6 +33,14 @@ public class ConversationUserRepository : IConversationUserRepository
         return conversationUser;
     }
 
+    // Update user conversation settings
+    public async Task<ConversationUser> UpdateAsync(ConversationUser conversationUser)
+    {
+        _context.ConversationUsers.Update(conversationUser);
+        await _context.SaveChangesAsync();
+        return conversationUser;
+    }
+
     // Remove user from conversation
     public async Task RemoveAsync(Guid conversationId, string userId)
     {

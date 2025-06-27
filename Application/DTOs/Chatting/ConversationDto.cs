@@ -2,6 +2,7 @@
 using Domain.Entities.Chatting;
 using Domain.Entities.Users;
 using MorphingTalk_API.DTOs.Chatting;
+using System.ComponentModel.DataAnnotations;
 
 namespace Application.DTOs.Chatting
 {
@@ -14,8 +15,7 @@ namespace Application.DTOs.Chatting
         public ConversationType Type { get; set; }            // "group" or "direct"
         public DateTime CreatedAt { get; set; }
         public ICollection<ConversationUserDto> Users { get; set; }
-        public MessageSummaryDto LastMessage { get; set; }
-        // Add more fields as needed (e.g., Conversation Icon, Admin, etc.)
+        public MessageSummaryDto LastMessage { get; set; }  // Add more fields as needed (e.g., Conversation Icon, Admin, etc.)
         public ConversationUserDto LoggedInConversationUser { get; set; }
         public bool muteNotifications { get; set; } = false; // Optional, if needed
         public bool UseRobotVoice { get; set; } = true; // Optional, if needed
@@ -70,5 +70,22 @@ namespace Application.DTOs.Chatting
         public List<string> UserEmails { get; set; } // Initial user list (can include self)
         public string? Description { get; set; } // Optional for group conversations
 
+    }
+
+    public class UpdateConversationDto
+    {
+        [StringLength(100, ErrorMessage = "Name cannot exceed 100 characters")]
+        public string? Name { get; set; }
+        
+        [Url(ErrorMessage = "Group image URL must be a valid URL")]
+        public string? GroupImageUrl { get; set; }   // Optional for group conversations
+        
+        [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
+        public string? Description { get; set; } // Optional for group conversations
+
+        // User-specific conversation settings
+        public bool? UseRobotVoice { get; set; }
+        public bool? TranslateMessages { get; set; }
+        public bool? MuteNotifications { get; set; }
     }
 }

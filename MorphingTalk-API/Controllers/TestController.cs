@@ -21,10 +21,9 @@ namespace MorphingTalk_API.Controllers
             _logger.LogInformation("Received webhook test:");
             _logger.LogInformation($"RequestId: {payload.RequestId}");
             _logger.LogInformation($"ModelId: {payload.modelId}");
-            _logger.LogInformation($"success (string): {payload.success}");
-            _logger.LogInformation($"errorMessage: {payload.errorMessage}");
+            _logger.LogInformation($"success (string): {payload.Success}");
+            _logger.LogInformation($"errorMessage: {payload.ErrorMessage}");
             _logger.LogInformation($"Success (boolean): {payload.Success}");
-            _logger.LogInformation($"ErrorMessage (property): {payload.ErrorMessage}");
 
             return Ok(new 
             {
@@ -32,8 +31,8 @@ namespace MorphingTalk_API.Controllers
                 {
                     requestId = payload.RequestId,
                     modelId = payload.modelId,
-                    successString = payload.success,
-                    errorMessage = payload.errorMessage
+                    successString = payload.Success,
+                    errorMessage = payload.ErrorMessage
                 },
                 parsed = new
                 {

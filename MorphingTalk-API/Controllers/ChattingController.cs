@@ -68,6 +68,15 @@ public class ChattingController : ControllerBase
         return StatusCode(result.StatusCode, result);
     }
 
+    // PUT: api/Chatting/conversations/{conversationId}
+    [HttpPut("conversations/{conversationId}")]
+    public async Task<IActionResult> UpdateConversation(Guid conversationId, [FromBody] UpdateConversationDto dto)
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var result = await _conversationService.UpdateConversationAsync(conversationId, dto, userId);
+        return StatusCode(result.StatusCode, result);
+    }
+
     // POST: api/Chatting/conversations/{conversationId}/users
     [HttpPost("conversations/{conversationId}/users")]
     public async Task<IActionResult> AddUserToConversation(Guid conversationId, [FromBody] AddUserToConversationDto dto)
