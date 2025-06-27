@@ -26,7 +26,8 @@ namespace Domain.Entities.Users
         public bool IsOnline { get; set; } = false;
         public DateTime? LastSeen { get; set; } = null;
         public bool IsTrainedVoice { get; set; }
-        public UserVoiceModel VoiceModel { get; set; }
+        public string? VoiceModelId { get; set; } // Foreign key
+        public UserVoiceModel? VoiceModel { get; set; }
         public bool UseRobotVoice { get; set; } = true;
         public bool MuteNotifications { get; set; } = false; // Optional, if needed
         public bool TranslateMessages { get; set; } = false; // Optional, if needed

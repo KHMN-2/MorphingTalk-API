@@ -1,4 +1,5 @@
 ﻿using System.Reflection.Emit;
+using Domain.Entities.AIModels;
 using Domain.Entities.Chatting;
 using Domain.Entities.Users;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -22,6 +23,7 @@ namespace Infrastructure.Data
         public DbSet<TextMessage> TextMessages { get; set; }
         public DbSet<VoiceMessage> VoiceMessages { get; set; }
         public DbSet<Friendship> Friendships { get; set; }
+        public DbSet<UserVoiceModel> UserVoiceModels { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -78,6 +80,18 @@ namespace Infrastructure.Data
 
             builder.Entity<Friendship>()
                 .HasIndex(f => new { f.UserId1, f.UserId2 }).IsUnique();
+
+            // Configure BlockedByUserId as optional foreign key
+            builder.Entity<Friendship>()
+                .Property(f => f.BlockedByUserId)
+                .IsRequired(false);
+
+            // Configure User-UserVoiceModel relationship
+            builder.Entity<User>()
+                .HasOne(u => u.VoiceModel)
+                .WithMany()
+                .HasForeignKey(u => u.VoiceModelId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

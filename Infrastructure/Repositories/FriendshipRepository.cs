@@ -31,7 +31,13 @@ namespace Infrastructure.Repositories
         public async Task<bool> IsBlockedAsync(string userId, string friendId)
         {
             return await _context.Friendships
-                .AnyAsync(fr => (fr.UserId1 == userId && fr.UserId2 == friendId) || (fr.UserId2 == userId && fr.UserId1 == friendId) && fr.IsBlocked);
+                .AnyAsync(fr => ((fr.UserId1 == userId && fr.UserId2 == friendId) || (fr.UserId2 == userId && fr.UserId1 == friendId)) && fr.IsBlocked);
+        }
+
+        public async Task<bool> IsBlockedByUserAsync(string blockerUserId, string blockedUserId)
+        {
+            return await _context.Friendships
+                .AnyAsync(fr => ((fr.UserId1 == blockerUserId && fr.UserId2 == blockedUserId) || (fr.UserId2 == blockerUserId && fr.UserId1 == blockedUserId)) && fr.IsBlocked && fr.BlockedByUserId == blockerUserId);
         }
         public async Task AddFriendRelationAsync(Friendship friendRelation)
         {
@@ -59,7 +65,7 @@ namespace Infrastructure.Repositories
         public async Task<List<Friendship>> GetBlockedUsersAsync(string userId)
         {
             return await _context.Friendships
-                .Where(fr => (fr.UserId1 == userId || fr.UserId2 == userId)  && fr.IsBlocked)
+                .Where(fr => ((fr.UserId1 == userId || fr.UserId2 == userId) && fr.IsBlocked && fr.BlockedByUserId == userId))
                 .Include(fr => fr.User1)
                 .Include(fr => fr.User2)
                 .ToListAsync();

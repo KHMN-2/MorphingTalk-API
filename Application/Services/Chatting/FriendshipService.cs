@@ -162,12 +162,15 @@ namespace Application.Services
             {
                 // Update existing relationship to blocked
                 existingFriendship.IsBlocked = true;
+                existingFriendship.BlockedByUserId = userId; // Track who blocked
                 existingFriendship.UpdatedAt = DateTime.UtcNow;
                 await _friendshipRepository.UpdateFriendRelationAsync(existingFriendship);
             }
             else
             {
                 // Create new blocked relationship
+                var originalBlockerId = userId; // Store original blocker ID before swapping
+                
                 if (userId.CompareTo(userToBlockId) > 0)
                 {
                     var temp = userId;
@@ -180,6 +183,7 @@ namespace Application.Services
                     UserId1 = userId,
                     UserId2 = userToBlockId,
                     IsBlocked = true,
+                    BlockedByUserId = originalBlockerId, // Track original blocker
                     UpdatedAt = DateTime.UtcNow
                 };
 
@@ -203,11 +207,11 @@ namespace Application.Services
 
             var userToUnblockId = userToUnblock.Id;
 
-            // Check if blocked
-            var isBlocked = await _friendshipRepository.IsBlockedAsync(userId, userToUnblockId);
-            if (!isBlocked)
+            // Check if the current user blocked the other user
+            var isBlockedByCurrentUser = await _friendshipRepository.IsBlockedByUserAsync(userId, userToUnblockId);
+            if (!isBlockedByCurrentUser)
             {
-                return new ResponseViewModel<string>(null, "User is not blocked", false, 400);
+                return new ResponseViewModel<string>(null, "You did not block this user or user is not blocked", false, 400);
             }
 
             // Get existing friendship
@@ -225,6 +229,11 @@ namespace Application.Services
         public async Task<bool> IsUserBlockedAsync(string userId, string otherUserId)
         {
             return await _friendshipRepository.IsBlockedAsync(userId, otherUserId);
+        }
+
+        public async Task<bool> DidUserBlockAsync(string blockerUserId, string blockedUserId)
+        {
+            return await _friendshipRepository.IsBlockedByUserAsync(blockerUserId, blockedUserId);
         }
     }
 } 

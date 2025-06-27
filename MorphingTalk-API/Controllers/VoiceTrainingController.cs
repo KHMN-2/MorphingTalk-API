@@ -121,18 +121,23 @@ namespace MorphingTalk_API.Controllers
 
                 // Update user to indicate training is in progress
                 user.IsTrainedVoice = false; // Training in progress
+                
+                var voiceModelId = Guid.NewGuid().ToString();
                 user.VoiceModel = new UserVoiceModel
                 {
+                    Id = voiceModelId, // Generate unique ID
                     TaskId = taskId,
                     Name = user.FullName + "_" + user.NativeLanguage,
                     CreatedAt = DateTime.UtcNow,
                     Status = UserVoiceModelStatus.Training
                 };
+                user.VoiceModelId = voiceModelId; // Set the foreign key
 
                 await _userRepository.UpdateUserAsync(user);
 
                 return Ok(new ResponseViewModel<object>(
                     new { 
+                        id = user.VoiceModel.Id,
                         taskId = taskId, 
                         name = user.VoiceModel.Name,
                         status = "training_started",

@@ -11,6 +11,7 @@ namespace Application.Interfaces.Repositories
     {
         Task<bool> IsFriendAsync(string userId, string friendId);
         Task<bool> IsBlockedAsync(string userId, string friendId);
+        Task<bool> IsBlockedByUserAsync(string blockerUserId, string blockedUserId);
         Task AddFriendRelationAsync(Friendship friendRelation);
         Task UpdateFriendRelationAsync(Friendship friendRelation);
         Task RemoveFriendRelationAsync(Friendship friendRelation);

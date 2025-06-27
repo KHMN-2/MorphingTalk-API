@@ -16,6 +16,7 @@ namespace Domain.Entities.Users
         }
         public DateTime UpdatedAt { get; set; }
         public bool IsBlocked { get; set; }
+        public string? BlockedByUserId { get; set; } // Tracks who initiated the block
     
         public User User1 { get; set; }
         public User User2 { get; set; }

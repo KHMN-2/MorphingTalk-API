@@ -12,5 +12,6 @@ namespace Application.Interfaces.Services
         Task<ResponseViewModel<string>> BlockUserAsync(string userId, string userToBlockEmail);
         Task<ResponseViewModel<string>> UnblockUserAsync(string userId, string userToUnblockEmail);
         Task<bool> IsUserBlockedAsync(string userId, string otherUserId);
+        Task<bool> DidUserBlockAsync(string blockerUserId, string blockedUserId);
     }
 } 
