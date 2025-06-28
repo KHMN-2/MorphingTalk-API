@@ -231,7 +231,7 @@ namespace MorphingTalk_API.Controllers
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", aiJwtSecret);
 
                 // Call external AI service to delete the model
-                var url = $"{aiBaseLink}/models/{user.VoiceModelId}";
+                var url = $"{aiBaseLink}/models/{user.Id}";
                 var response = await client.DeleteAsync(url);
 
                 if (response.IsSuccessStatusCode)
