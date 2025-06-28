@@ -2,6 +2,7 @@ using Application.DTOs;
 using Application.DTOs.Chatting;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Services.Chatting;
+using Domain.Entities.AIModels;
 using Domain.Entities.Chatting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
@@ -128,13 +129,13 @@ namespace Application.Services.Chatting
             {
                 return new ResponseViewModel<string>("", $"Error processing voice translation: {ex.Message}", false, StatusCodes.Status500InternalServerError);
             }
-        }public async Task<ResponseViewModel<string>> HandleVoiceTrainingWebhookAsync(AIWebhookTrainingPayloadDto payload)
+        }
+        public async Task<ResponseViewModel<string>> HandleVoiceTrainingWebhookAsync(AIWebhookTrainingPayloadDto payload)
         {
             try
             {
-                // Find the user by the task ID (stored in VoiceModel.Id)
-                var users = await _userRepository.GetAllUsersAsync();
-                var user = users.FirstOrDefault(u => u.VoiceModel != null && u.VoiceModel.Id == payload.RequestId);
+                // Find the user by matching the user ID with the model ID (model_id sent to AI service is the userId)
+                var user = await _userRepository.GetUserByIdAsync(payload.modelId);
                 
                 if (user == null)
                 {
@@ -147,13 +148,15 @@ namespace Application.Services.Chatting
                     user.IsTrainedVoice = true;
                     if (user.VoiceModel != null)
                     {
-                        user.VoiceModel.Name = payload.modelId; // Update with the final model ID from AI service
+                        user.VoiceModel.Status = UserVoiceModelStatus.Completed;
+                        // Keep the original name, don't overwrite with modelId (which is actually userId)
+                        // user.VoiceModel.Name remains as originally set: user.FullName + "_" + user.NativeLanguage
                     }
                     
                     await _userRepository.UpdateUserAsync(user);
                     
-                    // Notify the user via SignalR
-                    await _chatNotificationService.NotifyVoiceTrainingCompleted(user.Id, true, payload.modelId);
+                    // Notify the user via SignalR with the voice model ID (not the user ID)
+                    await _chatNotificationService.NotifyVoiceTrainingCompleted(user.Id, true, user.VoiceModel?.Id ?? payload.modelId);
                     
                     return new ResponseViewModel<string>("Training completed successfully", "Voice training completed and user notified", true, StatusCodes.Status200OK);
                 }
@@ -161,12 +164,15 @@ namespace Application.Services.Chatting
                 {
                     // Training failed
                     user.IsTrainedVoice = false;
-                    user.VoiceModel = null!; // Remove the failed training attempt
+                    if (user.VoiceModel != null)
+                    {
+                        user.VoiceModel.Status = UserVoiceModelStatus.Failed;
+                    }
                     
                     await _userRepository.UpdateUserAsync(user);
                     
-                    // Notify the user of the failure
-                    await _chatNotificationService.NotifyVoiceTrainingCompleted(user.Id, false, payload.modelId, payload.ErrorMessage);
+                    // Notify the user of the failure with the voice model ID
+                    await _chatNotificationService.NotifyVoiceTrainingCompleted(user.Id, false, user.VoiceModel?.Id ?? payload.modelId, payload.ErrorMessage);
                     
                     return new ResponseViewModel<string>("Training failed", $"Voice training failed: {payload.ErrorMessage}", false, StatusCodes.Status400BadRequest);
                 }
