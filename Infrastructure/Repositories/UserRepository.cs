@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Application.Interfaces.Repositories;
 using Domain.Entities.Users;
 using Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories
 {
@@ -81,7 +82,9 @@ namespace Infrastructure.Repositories
 
         public async Task<User> GetUserByEmailAsync(string email)
         {
-            var user = _identityContext.Users.FirstOrDefault<User>(u => u.Email == email);
+            var user = await _identityContext.Users
+                .Include(u => u.VoiceModel)
+                .FirstOrDefaultAsync(u => u.Email == email);
             if (user == null)
             {
                 throw new KeyNotFoundException("User not found");
@@ -91,7 +94,9 @@ namespace Infrastructure.Repositories
 
         public async Task<User> GetUserByIdAsync(string id)
         {
-            var user = await _identityContext.Users.FindAsync(id);
+            var user = await _identityContext.Users
+                .Include(u => u.VoiceModel)
+                .FirstOrDefaultAsync(u => u.Id == id);
             if (user == null) { 
                 throw new KeyNotFoundException("User not found");
             }
@@ -116,6 +121,7 @@ namespace Infrastructure.Repositories
             existingUser.PastProfilePicturePaths = user.PastProfilePicturePaths;
             existingUser.IsTrainedVoice = user.IsTrainedVoice;
             existingUser.VoiceModel = user.VoiceModel;
+            existingUser.VoiceModelId = user.VoiceModelId;
 
             _identityContext.Users.Update(existingUser);
             await _identityContext.SaveChangesAsync();

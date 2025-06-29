@@ -191,5 +191,110 @@ namespace MorphingTalk_API.Controllers
                     new ResponseViewModel<string>("", $"Internal server error: {ex.Message}", false, StatusCodes.Status500InternalServerError));
             }
         }
+
+        [HttpDelete("model")]
+        public async Task<IActionResult> DeleteVoiceModel()
+        {
+            try
+            {
+                // Get the authenticated user
+                string? userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized("User not authenticated");
+                }
+
+                var user = await _userRepository.GetUserByIdAsync(userId);
+                if (user == null)
+                {
+                    return NotFound("User not found");
+                }
+
+                // Check if user has a voice model
+                if (user.VoiceModel == null || string.IsNullOrEmpty(user.VoiceModelId))
+                {
+                    return NotFound(new ResponseViewModel<string>("", "No voice model found for this user", false, StatusCodes.Status404NotFound));
+                }
+
+                // Get AI service configuration
+                string aiBaseLink = _configuration["AIBaseLink"] ?? "";
+                string aiJwtSecret = _configuration["AIJWTSecret"] ?? "";
+
+                if (string.IsNullOrEmpty(aiBaseLink) || string.IsNullOrEmpty(aiJwtSecret))
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError, 
+                        new ResponseViewModel<string>("", "AI service configuration missing", false, StatusCodes.Status500InternalServerError));
+                }
+
+                // Prepare the HTTP client
+                var client = _httpClientFactory.CreateClient();
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", aiJwtSecret);
+
+                // Call external AI service to delete the model
+                var url = $"{aiBaseLink}/models/{user.Id}";
+                var response = await client.DeleteAsync(url);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // Success - model deleted from AI service
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var responseJson = JObject.Parse(responseContent);
+                    
+                    // Store model info before deletion for response
+                    var deletedModelInfo = new
+                    {
+                        id = user.VoiceModel.Id,
+                        name = user.VoiceModel.Name,
+                        status = user.VoiceModel.Status.ToString()
+                    };
+
+                    // Update user in database - remove voice model
+                    user.VoiceModel = null;
+                    user.VoiceModelId = null;
+                    user.IsTrainedVoice = false;
+                    await _userRepository.UpdateUserAsync(user);
+
+                    return Ok(new ResponseViewModel<object>(
+                        new { 
+                            status = "success",
+                            message = $"Model '{deletedModelInfo.id}' deleted successfully",
+                            deleted_model = deletedModelInfo
+                        }, 
+                        "Voice model deleted successfully", 
+                        true, 
+                        StatusCodes.Status200OK));
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    // Model not found on AI service
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    return NotFound(new ResponseViewModel<string>("", $"Model not found on AI service: {errorContent}", false, StatusCodes.Status404NotFound));
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+                {
+                    // Ongoing tasks conflict
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    var errorJson = JObject.Parse(errorContent);
+                    
+                    return StatusCode(StatusCodes.Status409Conflict, new ResponseViewModel<object>(
+                        errorJson,
+                        "Cannot delete model with ongoing tasks",
+                        false,
+                        StatusCodes.Status409Conflict));
+                }
+                else
+                {
+                    // Other error from AI service
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    return StatusCode((int)response.StatusCode, 
+                        new ResponseViewModel<string>("", $"AI service error: {errorContent}", false, (int)response.StatusCode));
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new ResponseViewModel<string>("", $"Internal server error: {ex.Message}", false, StatusCodes.Status500InternalServerError));
+            }
+        }
     }
 }
