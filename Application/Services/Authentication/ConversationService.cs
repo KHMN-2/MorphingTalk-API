@@ -299,5 +299,60 @@ namespace Application.Services.Authentication
             return new ResponseViewModel<ConversationDto>(result, message, true, 200);
         }
 
+        public async Task<ResponseViewModel<string>> DeleteOrLeaveConversationAsync(Guid conversationId, string userId)
+        {
+            // Check if conversation exists
+            var conversation = await _conversationRepo.GetByIdAsync(conversationId);
+            if (conversation == null)
+            {
+                return new ResponseViewModel<string>(null, "Conversation not found.", false, 404);
+            }
+
+            // Check if user is part of the conversation
+            if (!conversation.ConversationUsers.Any(cu => cu.UserId == userId))
+            {
+                return new ResponseViewModel<string>(null, "User not part of this conversation.", false, 403);
+            }
+
+            var allUsers = conversation.ConversationUsers.ToList();
+            var currentUser = allUsers.FirstOrDefault(cu => cu.UserId == userId);
+
+            // Determine if we should delete the entire conversation or just remove the user
+            bool shouldDeleteEntireConversation = false;
+
+            if (conversation.Type == ConversationType.OneToOne)
+            {
+                // For one-to-one conversations, always delete the entire conversation
+                shouldDeleteEntireConversation = true;
+            }
+            else if (allUsers.Count <= 1)
+            {
+                // If user is the last person in the conversation, delete it
+                shouldDeleteEntireConversation = true;
+            }
+
+            if (shouldDeleteEntireConversation)
+            {
+                // Delete the entire conversation (this will cascade delete all messages and conversation users)
+                await _conversationRepo.DeleteAsync(conversationId);
+                
+                return new ResponseViewModel<string>(null, "Conversation deleted successfully.", true, 200);
+            }
+            else
+            {
+                // Just remove the user from the conversation
+                // Notify other users before removal
+                await _chatNotificationService.NotifyUserLeftConversation(
+                    conversationId,
+                    userId,
+                    currentUser?.User?.FullName ?? "Unknown User");
+
+                // Remove user from conversation
+                await _conversationUserRepo.RemoveAsync(conversationId, userId);
+
+                return new ResponseViewModel<string>(null, "Left conversation successfully.", true, 200);
+            }
+        }
+
     }
 }

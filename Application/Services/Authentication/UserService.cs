@@ -182,5 +182,59 @@ namespace Application.Services.Authentication
                 return new ResponseViewModel<UserDto?>(null, $"Error updating profile picture: {ex.Message}", false, 500);
             }
         }
+
+        public async Task<ResponseViewModel<string>> DeleteUserAsync(string userId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return new ResponseViewModel<string>(null, "User ID is required", false, 400);
+                }
+
+                var user = await _userRepository.GetUserByIdAsync(userId);
+                if (user == null)
+                {
+                    return new ResponseViewModel<string>(null, "User not found", false, 404);
+                }
+
+                // Delete user profile picture if exists
+                if (!string.IsNullOrEmpty(user.ProfilePicturePath))
+                {
+                    try
+                    {
+                        _fileStorageService.DeleteFile(user.ProfilePicturePath);
+                    }
+                    catch
+                    {
+                        // Log the error but don't fail the deletion
+                    }
+                }
+
+                // Delete past profile pictures if they exist
+                if (user.PastProfilePicturePaths?.Any() == true)
+                {
+                    foreach (var pastPicPath in user.PastProfilePicturePaths)
+                    {
+                        try
+                        {
+                            _fileStorageService.DeleteFile(pastPicPath);
+                        }
+                        catch
+                        {
+                            // Log the error but don't fail the deletion
+                        }
+                    }
+                }
+
+                await _userRepository.DeleteUserAsync(user);
+
+                return new ResponseViewModel<string>(null, "User deleted successfully", true, 200);
+            }
+            catch (Exception ex)
+            {
+                return new ResponseViewModel<string>(null, $"Error deleting user: {ex.Message}", false, 500);
+            }
+        }
     }
 }

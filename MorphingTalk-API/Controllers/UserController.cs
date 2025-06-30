@@ -123,5 +123,33 @@ namespace MorphingTalk_API.Controllers
                 return StatusCode(500, new { message = $"Internal server error: {ex.Message}" });
             }
         }
+
+        [HttpDelete("DeleteLoggedUser")]
+        public async Task<IActionResult> DeleteLoggedUser()
+        {
+            try
+            {
+                string? userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized("User not authenticated");
+                }
+
+                var result = await _userService.DeleteUserAsync(userId);
+                
+                if (result.Success)
+                {
+                    return Ok(result);
+                }
+                else
+                {
+                    return StatusCode(result.StatusCode, result);
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Internal server error: {ex.Message}" });
+            }
+        }
     }
 }

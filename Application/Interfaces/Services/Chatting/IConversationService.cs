@@ -15,5 +15,6 @@ namespace Application.Interfaces.Services.Chatting
         Task<ResponseViewModel<ConversationDto>> GetConversationByIdAsync(Guid conversationId, string? userId);
         Task<ResponseViewModel<ICollection<ConversationDto>>> GetConversationsForUserAsync(string? userId);
         Task<ResponseViewModel<ConversationDto>> UpdateConversationAsync(Guid conversationId, UpdateConversationDto dto, string? userId);
+        Task<ResponseViewModel<string>> DeleteOrLeaveConversationAsync(Guid conversationId, string userId);
     }
 }

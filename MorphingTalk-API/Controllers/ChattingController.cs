@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using MorphingTalk_API.DTOs.Chatting;
 using System;
 using System.Threading.Tasks;
+using System.Linq;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -109,6 +110,21 @@ public class ChattingController : ControllerBase
         }
     }
 
+    // DELETE: api/Chatting/conversations/{conversationId}
+    [HttpDelete("conversations/{conversationId}")]
+    public async Task<IActionResult> DeleteOrLeaveConversation(Guid conversationId)
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return StatusCode(StatusCodes.Status401Unauthorized,
+                new ResponseViewModel<string>(null, "User not authenticated", false, StatusCodes.Status401Unauthorized));
+        }
+
+        var result = await _conversationService.DeleteOrLeaveConversationAsync(conversationId, userId);
+        return StatusCode(result.StatusCode, result);
+    }
+
     // GET: api/Chatting/conversations/{conversationId}/users
     [HttpGet("conversations/{conversationId}/users")]
     public async Task<IActionResult> GetUsersForConversation(Guid conversationId)
@@ -188,15 +204,48 @@ public class ChattingController : ControllerBase
     [HttpDelete("messages/{messageId}")]
     public async Task<IActionResult> DeleteMessage(Guid messageId)
     {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return StatusCode(StatusCodes.Status401Unauthorized,
+                new ResponseViewModel<string>(null, "User not authenticated", false, StatusCodes.Status401Unauthorized));
+        }
+
         try
         {
+            // Get the message with its conversation and sender information
+            var message = await _messageRepo.GetByIdAsync(messageId);
+            if (message == null)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, 
+                    new ResponseViewModel<string>(null, "Message not found", false, StatusCodes.Status404NotFound));
+            }
+
+            // Check if the user is part of the conversation
+            var conversation = await _conversationRepo.GetByIdAsync(message.ConversationId);
+            if (conversation == null || !conversation.ConversationUsers.Any(cu => cu.UserId == userId))
+            {
+                return StatusCode(StatusCodes.Status403Forbidden,
+                    new ResponseViewModel<string>(null, "You don't have permission to delete this message", false, StatusCodes.Status403Forbidden));
+            }
+
+            // Check if the user is the sender of the message
+            if (message.ConversationUser?.UserId != userId)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden,
+                    new ResponseViewModel<string>(null, "You can only delete your own messages", false, StatusCodes.Status403Forbidden));
+            }
+
+            // Delete the message
             await _messageRepo.DeleteAsync(messageId);
-            return StatusCode(StatusCodes.Status204NoContent);
+            
+            return StatusCode(StatusCodes.Status200OK,
+                new ResponseViewModel<string>(null, "Message deleted successfully", true, StatusCodes.Status200OK));
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            return StatusCode(StatusCodes.Status404NotFound, 
-                new ResponseViewModel<string>(null, "Message not found", false, StatusCodes.Status404NotFound));
+            return StatusCode(StatusCodes.Status500InternalServerError, 
+                new ResponseViewModel<string>(null, "An error occurred while deleting the message", false, StatusCodes.Status500InternalServerError));
         }
     }
 

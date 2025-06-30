@@ -168,7 +168,8 @@ namespace MorphingTalk_API.Hubs
                 .SendAsync("UserStartedTyping", typingIndicator);
                 
             _logger.LogInformation($"UserStartedTyping broadcast completed for user {userId}");
-        }/// <summary>
+        }
+        /// <summary>
         /// User stopped typing in a conversation
         /// </summary>        [HubMethodName("StopTyping")]
         public async Task StopTyping(string conversationId)
@@ -202,7 +203,8 @@ namespace MorphingTalk_API.Hubs
                 .SendAsync("UserStoppedTyping", typingIndicator);
                 
             _logger.LogInformation($"UserStoppedTyping broadcast completed for user {userId}");
-        }/// <summary>
+        }
+        /// <summary>
         /// Get currently typing users in a conversation
         /// </summary>
         public async Task GetTypingUsers(string conversationId)
@@ -298,7 +300,9 @@ namespace MorphingTalk_API.Hubs
         {
             var onlineUsers = _userConnections.Keys.ToArray();
             await Clients.Caller.SendAsync("OnlineUsersResponse", onlineUsers, DateTime.UtcNow);
-        }        public override async Task OnConnectedAsync()
+        }        
+        
+        public override async Task OnConnectedAsync()
         {
             var userId = Context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "Unknown";
             _logger.LogInformation($"Client connected: {Context.ConnectionId}, User: {userId}");

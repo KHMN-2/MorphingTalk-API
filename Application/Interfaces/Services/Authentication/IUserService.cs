@@ -17,5 +17,6 @@ namespace Application.Interfaces.Services.Authentication
         public Task<ResponseViewModel<LoggedInUserDto?>> UpdateUserAsync(string userId, UpdateUserDto updateUserDto);
         public Task<ResponseViewModel<UserDto?>> UpdateUserProfilePictureAsync(string userId, UpdateUserProfileDto updateUserProfileDto);
         public Task<ResponseViewModel<LoggedInUserDto>> GetLoggedUserByIdAsync(string? id);
+        public Task<ResponseViewModel<string>> DeleteUserAsync(string userId);
     }
 }

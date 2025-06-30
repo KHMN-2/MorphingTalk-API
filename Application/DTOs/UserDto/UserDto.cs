@@ -11,7 +11,6 @@ namespace Application.DTOs.UserDto
     {
         public string? Id { get; set; }
         
-        [JsonPropertyName("Name")]
         public string? FullName { get; set; }
         
         public string? Email { get; set; }

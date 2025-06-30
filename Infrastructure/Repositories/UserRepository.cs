@@ -69,9 +69,23 @@ namespace Infrastructure.Repositories
             throw new NotImplementedException();
         }
 
-        public Task<User> DeleteUserAsync(User user)
+        public async Task<User> DeleteUserAsync(User user)
         {
-            throw new NotImplementedException();
+            using var transaction = await _identityContext.Database.BeginTransactionAsync();
+            try
+            {
+                // Remove user from identity context
+                _identityContext.Users.Remove(user);
+                await _identityContext.SaveChangesAsync();
+                
+                await transaction.CommitAsync();
+                return user;
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
         public Task<List<User>> GetAllUsersAsync()

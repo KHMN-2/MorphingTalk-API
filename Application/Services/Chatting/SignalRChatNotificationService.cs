@@ -59,7 +59,8 @@ namespace Application.Services.Chatting
 
             await _hubContext.Clients.Group(conversationId.ToString())
                 .SendAsync("UserLeft", conversationId, userId, userName);
-        }        public async Task NotifyMessageTranslated(Guid conversationId, Guid translatedMessageId, string senderId, string targetLanguage)
+        }        
+        public async Task NotifyMessageTranslated(Guid conversationId, Guid translatedMessageId, string senderId, string targetLanguage)
         {
             var translationNotification = new
             {
