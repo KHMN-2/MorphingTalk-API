@@ -32,6 +32,11 @@ namespace Application.DTOs.Chatting
             }
             var loggedInConversationUser = conversation.ConversationUsers?
                 .FirstOrDefault(cu => cu.UserId == userId);
+            var users = conversation.ConversationUsers?
+                .Where(cu => cu.UserId != userId)
+                .Select(cu => ConversationUserDto.FromConversationUser(cu))
+                .ToList();
+            users.Insert(0, ConversationUserDto.FromConversationUser(loggedInConversationUser));
             return new ConversationDto
             {
                 Id = conversation.Id,
@@ -47,7 +52,7 @@ namespace Application.DTOs.Chatting
                     ? ConversationUserDto.FromConversationUser(loggedInConversationUser)
                     : null,
 
-                Users = conversation.ConversationUsers?.Select(cu => ConversationUserDto.FromConversationUser(cu)).ToList(),
+                Users = users ?? new List<ConversationUserDto>(),
                 LastMessage = conversation.Messages?
                     .OrderByDescending(m => m.SentAt)
                     .Take(1)

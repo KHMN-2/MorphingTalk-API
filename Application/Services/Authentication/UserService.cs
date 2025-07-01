@@ -15,11 +15,16 @@ namespace Application.Services.Authentication
     {
         private IUserRepository _userRepository;
         private IFileStorageService _fileStorageService;
+        private IConversationRepository _conversationRepository;
+        private IConversationUserRepository _conversationUserRepository;
 
-        public UserService(IUserRepository userRepository, IFileStorageService fileStorageService)
+        public UserService(IUserRepository userRepository, IFileStorageService fileStorageService,
+            IConversationRepository conversationRepository, IConversationUserRepository conversationUserRepository)
         {
             _userRepository = userRepository;
             _fileStorageService = fileStorageService;
+            _conversationRepository = conversationRepository;
+            _conversationUserRepository = conversationUserRepository;
         }
 
         public async Task<ResponseViewModel<List<UserDto>>> GetAllUsersAsync()

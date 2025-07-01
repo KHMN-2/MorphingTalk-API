@@ -17,8 +17,8 @@ namespace Domain.Entities.Chatting
     {
         public Guid Id { get; set; } 
         [ForeignKey("User")]
-        public string UserId { get; set; }
-        public User User { get; set; }
+        public string? UserId { get; set; }
+        public User? User { get; set; }
         public DateTime JoinedAt { get; set; }
         public Roles Role { get; set; } // e.g., "Admin", "Member"
         public Guid ConversationId { get; set; }

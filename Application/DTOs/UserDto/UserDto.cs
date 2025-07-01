@@ -18,6 +18,7 @@ namespace Application.DTOs.UserDto
         public string? NativeLanguage { get; set; }
         public string? AboutStatus { get; set; }
         public string? ProfilePicPath { get; set; }
+        public DateTime LastUpdated { get; set; }
 
 
         public static UserDto FromUser(User user)
@@ -31,6 +32,7 @@ namespace Application.DTOs.UserDto
                 AboutStatus = user.AboutStatus,
                 Gender = user.Gender,
                 ProfilePicPath = user.ProfilePicturePath,
+                LastUpdated = user.LastUpdatedOn,
             };
         }
     }
@@ -40,8 +42,8 @@ namespace Application.DTOs.UserDto
         public bool UseRobotVoice { get; set; } = true;
         public bool MuteNotifications { get; set; } = false; // Optional, if needed
         public bool TranslateMessages { get; set; } = false; // Optional, if needed
-        public ICollection<string>? PastProfilePicsPath { get; set; }
         public bool? IsFirstLogin { get; set; }
+
 
 
         public static LoggedInUserDto FromUser(User user)
@@ -56,7 +58,7 @@ namespace Application.DTOs.UserDto
                 AboutStatus = user.AboutStatus,
                 Gender = user.Gender,
                 ProfilePicPath = user.ProfilePicturePath,
-                PastProfilePicsPath = user.PastProfilePicturePaths
+                LastUpdated = user.LastUpdatedOn,
             };
         }
     }
