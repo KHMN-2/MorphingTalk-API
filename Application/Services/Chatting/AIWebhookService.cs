@@ -137,8 +137,13 @@ namespace Application.Services.Chatting
                         // NOW save the message to database (first time)
                         await _messageRepository.AddAsync(message);
 
-                        // Send notification as if it's a normal message being sent (not a translation update)
-                        await _chatNotificationService.NotifyMessageSent(message.ConversationId, message);
+                        // Reload the message with navigation properties for notification
+                        var savedMessage = await _messageRepository.GetByIdAsync(message.Id);
+                        if (savedMessage != null)
+                        {
+                            // Send notification as if it's a normal message being sent (not a translation update)
+                            await _chatNotificationService.NotifyMessageSent(message.ConversationId, savedMessage);
+                        }
 
                         // Clean up cache entries
                         foreach (var cleanupTaskId in translationTracker.TaskIds)
