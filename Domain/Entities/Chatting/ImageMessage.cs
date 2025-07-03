@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities.Chatting
 {
-    public enum MessageType
+    public class ImageMessage : Message
     {
-        Text,
-        Voice,
-        Image,
+        public string ImageUrl { get; set; }
+        public MessageType Type => MessageType.Image;
     }
 }

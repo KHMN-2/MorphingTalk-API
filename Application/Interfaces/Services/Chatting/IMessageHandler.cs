@@ -12,7 +12,7 @@ namespace Application.Interfaces.Services.Chatting
     public interface IMessageHandler
     {
         Task HandleMessageAsync(SendMessageDto message, Guid conversationId, string userId);
-        Task<string> HandleTranslationAsync(SendMessageDto message, Guid conversationId, string userId);
+        Task<List<string>> HandleTranslationAsync(SendMessageDto message, Guid conversationId, string userId, List<string> targetLanguages);
         bool CanHandle(MessageType messageType);
     }
 }

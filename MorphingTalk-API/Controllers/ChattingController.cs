@@ -184,17 +184,7 @@ public class ChattingController : ControllerBase
     public async Task<IActionResult> GetMessages(Guid conversationId, [FromQuery] int count = 50, [FromQuery] int skip = 0)
     {
         var messages = await _messageRepo.GetMessagesForConversationAsync(conversationId, count, skip);
-        var result = messages.Select(m => new MessageSummaryDto
-        {
-            Id = m.Id,
-            Type = m is TextMessage ? MessageType.Text.ToString() : m is VoiceMessage ? MessageType.Voice.ToString() : "unknown",
-            SenderId = m.ConversationUser?.UserId,
-            SenderDisplayName = m.ConversationUser?.User?.FullName,
-            Text = m is TextMessage tm ? tm.Content : null,
-            VoiceFileUrl = m is VoiceMessage vm ? (vm.IsTranslated ? vm.TranslatedVoiceUrl : vm.VoiceUrl) : null,
-            Duration = m is VoiceMessage v ? v.DurationSeconds : null,
-            SentAt = m.SentAt
-        }).ToList();
+        var result = messages.Select(MessageSummaryDto.FromMessage).ToList();
 
         return StatusCode(StatusCodes.Status200OK, 
             new ResponseViewModel<List<MessageSummaryDto>>(result, "Messages retrieved successfully", true, StatusCodes.Status200OK));

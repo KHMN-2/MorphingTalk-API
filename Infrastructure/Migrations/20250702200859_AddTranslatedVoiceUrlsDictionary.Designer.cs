@@ -4,6 +4,7 @@ using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250702200859_AddTranslatedVoiceUrlsDictionary")]
+    partial class AddTranslatedVoiceUrlsDictionary
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -456,15 +459,6 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsTranslated")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("TranslatedContent")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TranslatedContents")
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasDiscriminator().HasValue("Text");
                 });
 
@@ -487,12 +481,6 @@ namespace Infrastructure.Migrations
                     b.Property<string>("VoiceUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.ToTable("Messages", t =>
-                        {
-                            t.Property("IsTranslated")
-                                .HasColumnName("VoiceMessage_IsTranslated");
-                        });
 
                     b.HasDiscriminator().HasValue("Voice");
                 });

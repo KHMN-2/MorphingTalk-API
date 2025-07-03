@@ -59,6 +59,7 @@ namespace Application.DTOs.UserDto
                 Gender = user.Gender,
                 ProfilePicPath = user.ProfilePicturePath,
                 LastUpdated = user.LastUpdatedOn,
+                MuteNotifications = user.MuteNotifications,
             };
         }
     }

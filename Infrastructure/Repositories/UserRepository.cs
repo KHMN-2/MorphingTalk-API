@@ -115,7 +115,8 @@ namespace Infrastructure.Repositories
                 throw new KeyNotFoundException("User not found");
             }
             return user;
-        }        public async Task<User> UpdateUserAsync(User user)
+        }        
+        public async Task<User> UpdateUserAsync(User user)
         {
             var existingUser = await _identityContext.Users.FindAsync(user.Id);
             if (existingUser == null)
@@ -136,6 +137,7 @@ namespace Infrastructure.Repositories
             existingUser.IsTrainedVoice = user.IsTrainedVoice;
             existingUser.VoiceModel = user.VoiceModel;
             existingUser.VoiceModelId = user.VoiceModelId;
+            existingUser.MuteNotifications = user.MuteNotifications;
 
             _identityContext.Users.Update(existingUser);
             await _identityContext.SaveChangesAsync();

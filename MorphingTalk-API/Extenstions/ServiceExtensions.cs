@@ -41,6 +41,7 @@ namespace MorphingTalk_API.Extensions
 			services.AddSignalR();
             services.AddScoped<IMessageHandler, VoiceMessageHandler>();
             services.AddScoped<IMessageHandler, TextMessageHandler>();
+            services.AddScoped<IMessageHandler, ImageMessageHandler>();
             services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<IConversationRepository, ConversationRepository>();
             services.AddScoped<IConversationUserRepository, ConversationUserRepository>();
@@ -50,6 +51,7 @@ namespace MorphingTalk_API.Extensions
             services.AddScoped<IFriendshipService, FriendshipService>();
             services.AddScoped<IConversationService, ConversationService>();
             services.AddScoped<IAIWebhookService, AIWebhookService>();
+            services.AddScoped<ITextTranslationService, MyMemoryTranslationService>();
 
             services.AddScoped<IFileValidator, FileValidator>();
             services.AddScoped<IFilePathProvider, FilePathProvider>();

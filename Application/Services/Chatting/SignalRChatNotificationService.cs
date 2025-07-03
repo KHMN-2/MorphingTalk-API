@@ -25,19 +25,7 @@ namespace Application.Services.Chatting
 
         public async Task NotifyMessageSent(Guid conversationId, Message message)
         {
-            var messageDto = new MessageSummaryDto
-            {
-                Id = message.Id,
-                Type = message is TextMessage ? MessageType.Text.ToString() : message is VoiceMessage ? MessageType.Voice.ToString() : "unknown",
-                SenderId = message.ConversationUser?.UserId,
-                SenderDisplayName = message.ConversationUser?.User?.FullName,
-                Text = message is TextMessage tm ? tm.Content : null,
-                SentAt = message.SentAt,
-                ConversationId = message.ConversationId.ToString(),
-                MessageStatus = message.Status.ToString(),
-                VoiceFileUrl = message is VoiceMessage vm ? (vm.IsTranslated ? vm.TranslatedVoiceUrl : vm.VoiceUrl) : null,
-                Duration = message is VoiceMessage v ? v.DurationSeconds : null,
-            };
+            var messageDto = MessageSummaryDto.FromMessage(message);
 
             _logger.LogInformation("Sending message notification for MessageId: {MessageId}, ConversationId: {ConversationId}", message.Id, conversationId);
 

@@ -44,8 +44,6 @@ namespace Application.Services.Authentication
             return new ResponseViewModel<LoggedInUserDto>(userDto, "User found", true, 200);
 
         }
-
-
         public async Task<ResponseViewModel<UserDto>> GetUserByIdAsync(string? id)
         {
             if (string.IsNullOrEmpty(id))
@@ -94,7 +92,7 @@ namespace Application.Services.Authentication
                 if (!string.IsNullOrWhiteSpace(updateUserDto.NativeLanguage))
                     user.NativeLanguage = updateUserDto.NativeLanguage;
                 
-                if (string.IsNullOrEmpty(updateUserDto.ProfilePicturePath))
+                if (!string.IsNullOrEmpty(updateUserDto.ProfilePicturePath))
                     user.ProfilePicturePath = updateUserDto.ProfilePicturePath;
 
                 if (!string.IsNullOrWhiteSpace(updateUserDto.AboutStatus))

@@ -14,12 +14,20 @@ namespace Application.Services.Chatting
 {
     public class TextMessageHandler : IMessageHandler
     {
-        ILogger<TextMessageHandler> _logger;
-        IMessageRepository _messageRepository;
-        public TextMessageHandler(ILogger<TextMessageHandler> logger, IMessageRepository messageRepository)
+        private readonly ILogger<TextMessageHandler> _logger;
+        private readonly IMessageRepository _messageRepository;
+        private readonly ITextTranslationService _textTranslationService;
+        private readonly IUserRepository _userRepository;
+
+        public TextMessageHandler(
+            ILogger<TextMessageHandler> logger, 
+            IMessageRepository messageRepository,
+            ITextTranslationService textTranslationService,
+            IUserRepository userRepository)
         {
             _messageRepository = messageRepository;
-            
+            _textTranslationService = textTranslationService;
+            _userRepository = userRepository;
             _logger = logger;
         }
 
@@ -37,6 +45,8 @@ namespace Application.Services.Chatting
                 ConversationUserId = message.SenderConversationUserId,
                 ConversationId = conversationId,
                 Status = MessageStatus.Sent,
+                IsTranslated = false,
+                TranslatedContents = new Dictionary<string, string>()
             };
 
             // Save the message to the repository
@@ -47,15 +57,24 @@ namespace Application.Services.Chatting
             await Task.CompletedTask;
         }
 
-        public async Task<string> HandleTranslationAsync(SendMessageDto message, Guid conversationId, string userId)
+        public async Task<List<string>> HandleTranslationAsync(SendMessageDto message, Guid conversationId, string userId, List<string> targetLanguages)
         {
-            // For text messages, we process the translation directly
-            // and don't need to return a task ID since translation is immediate
-            
             if (string.IsNullOrEmpty(message.Text))
                 throw new ArgumentException("Text content is required for text messages");
+
+            // Get the user to determine source language
+            var user = await _userRepository.GetUserByIdAsync(userId);
+            if (user == null)
+                throw new KeyNotFoundException("User not found");
+
+            string sourceLanguage = user.NativeLanguage ?? "en";
             
-            // Create the text message with the original text
+            _logger.LogInformation($"Starting text translation from {sourceLanguage} to [{string.Join(", ", targetLanguages)}]");
+
+            // Perform translation
+            var translations = await _textTranslationService.TranslateTextAsync(message.Text, sourceLanguage, targetLanguages);
+
+            // Create the text message with translations
             var textMessage = new TextMessage
             {
                 Content = message.Text,
@@ -63,16 +82,19 @@ namespace Application.Services.Chatting
                 ConversationUserId = message.SenderConversationUserId,
                 ConversationId = conversationId,
                 Status = MessageStatus.Sent,
+                IsTranslated = translations.Any(),
+                TranslatedContents = translations,
+                TranslatedContent = translations.Values.FirstOrDefault() // Backward compatibility
             };
 
             // Save the message to the repository
             await _messageRepository.AddAsync(textMessage);
 
-            _logger.LogInformation($"Processing text message with translation: {textMessage.Content}");
+            _logger.LogInformation($"Text message translation completed. Original: '{message.Text}', Translations: {translations.Count}");
             
-            // For text messages, we return empty string since translation is handled immediately
-            // and doesn't require a task ID
-            return string.Empty;
+            // For text messages, we return empty list since translation is handled immediately
+            // and doesn't require task IDs
+            return new List<string>();
         }
     }
 }

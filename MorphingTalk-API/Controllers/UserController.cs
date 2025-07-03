@@ -8,7 +8,7 @@ namespace MorphingTalk_API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    //[Authorize]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -23,7 +23,8 @@ namespace MorphingTalk_API.Controllers
         {
             var result = await _userService.GetAllUsersAsync();
             return Ok(result);
-        }        [HttpGet("GetLoggedInUser")]
+        }        
+        [HttpGet("GetLoggedInUser")]
         [Authorize]
         public async Task<IActionResult> GetLoggedInUser()
         {

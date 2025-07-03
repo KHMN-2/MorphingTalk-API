@@ -16,6 +16,7 @@ using System.Net.Http.Headers;
 using System.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Application.Services.Chatting
 {
@@ -27,6 +28,7 @@ namespace Application.Services.Chatting
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
         private readonly IWebHostEnvironment _env;
+        private readonly IMemoryCache _memoryCache;
 
         public VoiceMessageHandler(
             ILogger<VoiceMessageHandler> logger,
@@ -34,7 +36,8 @@ namespace Application.Services.Chatting
             IUserRepository userRepository,
             IHttpClientFactory httpClientFactory,
             IConfiguration configuration,
-            IWebHostEnvironment env)
+            IWebHostEnvironment env,
+            IMemoryCache memoryCache)
         {
             _messageRepository = messageRepository;
             _userRepository = userRepository;
@@ -42,6 +45,7 @@ namespace Application.Services.Chatting
             _httpClientFactory = httpClientFactory;
             _configuration = configuration;
             _env = env;
+            _memoryCache = memoryCache;
         }
 
         public bool CanHandle(MessageType messageType) => messageType == MessageType.Voice;
@@ -71,7 +75,7 @@ namespace Application.Services.Chatting
             await Task.CompletedTask;
         }
 
-        public async Task<string> HandleTranslationAsync(SendMessageDto message, Guid conversationId, string userId)
+        public async Task<List<string>> HandleTranslationAsync(SendMessageDto message, Guid conversationId, string userId, List<string> targetLanguages)
         {
             var user = await _userRepository.GetUserByIdAsync(userId);
             if (user == null)
@@ -80,12 +84,10 @@ namespace Application.Services.Chatting
             if (string.IsNullOrEmpty(message.VoiceFileUrl))
                 throw new ArgumentException("Voice file URL is required for voice message translation");
 
-            if (string.IsNullOrEmpty(message.TargetLanguage))
-                throw new ArgumentException("Target language is required for translation");
-
+          
             string modelId = (!user.IsTrainedVoice || message.UseRobotVoice == true) ? "DRRamly" : user.VoiceModel?.Name ?? "DRRamly";
             string sourceLanguage = user.NativeLanguage ?? "en";
-            string targetLanguage = message.TargetLanguage;
+
 
             // Get config values directly
             string aiBaseLink = _configuration["AIBaseLink"] ?? throw new InvalidOperationException("AIBaseLink configuration is missing");
@@ -108,29 +110,42 @@ namespace Application.Services.Chatting
 
             var client = _httpClientFactory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", aiJwtSecret);
+            List<string> taskIds = new List<string>();
+            
+            foreach(var targetLanguage in targetLanguages)
+            {
+                using var form = new MultipartFormDataContent();
+                using var fileStream = File.OpenRead(filePath);
+                var fileContent = new StreamContent(fileStream);
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue(mimeType);
+                form.Add(fileContent, "file", Path.GetFileName(filePath));
 
-            using var form = new MultipartFormDataContent();
-            using var fileStream = File.OpenRead(filePath);
-            var fileContent = new StreamContent(fileStream);
-            fileContent.Headers.ContentType = new MediaTypeHeaderValue(mimeType);
-            form.Add(fileContent, "file", Path.GetFileName(filePath));
+                form.Add(new StringContent(modelId), "model_id");
+                form.Add(new StringContent(sourceLanguage), "speaker_lang");
+                form.Add(new StringContent(targetLanguage), "target_lang");
+                form.Add(new StringContent(user.Gender ?? "male"), "gender");
 
-            form.Add(new StringContent(modelId), "model_id");
-            form.Add(new StringContent(sourceLanguage), "speaker_lang");
-            form.Add(new StringContent(targetLanguage), "target_lang");
-            form.Add(new StringContent(user.Gender ?? "male"), "gender");
+                var url = $"{aiBaseLink}/voice/process";
+                var response = await client.PostAsync(url, form);
+                response.EnsureSuccessStatusCode();
 
-            var url = $"{aiBaseLink}/voice/process";
-            var response = await client.PostAsync(url, form);
-            response.EnsureSuccessStatusCode();
-
-            var responseString = await response.Content.ReadAsStringAsync();
-            // Extract task_id from response JSON
-            var json = JObject.Parse(responseString);
-            var taskId = json["task_id"]?.ToString();
-            if (string.IsNullOrEmpty(taskId))
-                throw new Exception("AI service did not return a task_id");
-            return taskId;
+                var responseString = await response.Content.ReadAsStringAsync();
+                // Extract task_id from response JSON
+                var json = JObject.Parse(responseString);
+                var taskId = json["task_id"]?.ToString();
+                if (string.IsNullOrEmpty(taskId))
+                        throw new Exception("AI service did not return a task_id");
+                
+                taskIds.Add(taskId);
+                
+                // Store mapping of taskId to target language for webhook processing
+                var cacheKey = $"taskId_language_{taskId}";
+                _memoryCache.Set(cacheKey, targetLanguage, TimeSpan.FromMinutes(30));
+                
+                _logger.LogInformation($"Created translation task {taskId} for language {targetLanguage}");
+            }
+            
+            return taskIds;
         }
     }
 }
