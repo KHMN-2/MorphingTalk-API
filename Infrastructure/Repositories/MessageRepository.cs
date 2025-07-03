@@ -21,6 +21,18 @@ public class MessageRepository : IMessageRepository
             .FirstOrDefaultAsync(m => m.Id == id);
     }
 
+    public async Task<Message> GetByIdWithReplyAsync(Guid id)
+    {
+        return await _context.Messages
+            .Include(m => m.ConversationUser)
+                .ThenInclude(cu => cu.User)
+            .Include(m => m.Conversation)
+            .Include(m => m.ReplyToMessage)
+                .ThenInclude(rm => rm.ConversationUser)
+                    .ThenInclude(cu => cu.User)
+            .FirstOrDefaultAsync(m => m.Id == id);
+    }
+
     public async Task<List<Message>> GetMessagesForConversationAsync(Guid conversationId, int count = 50, int skip = 0)
     {
         return await _context.Messages
@@ -30,6 +42,9 @@ public class MessageRepository : IMessageRepository
             .Take(count)
             .Include(m => m.ConversationUser)
                 .ThenInclude(cu => cu.User)
+            .Include(m => m.ReplyToMessage)
+                .ThenInclude(rm => rm.ConversationUser)
+                    .ThenInclude(cu => cu.User)
             .ToListAsync();
     }
 
@@ -42,6 +57,9 @@ public class MessageRepository : IMessageRepository
             .Take(count)
             .Include(m => m.ConversationUser)
                 .ThenInclude(cu => cu.User)
+            .Include(m => m.ReplyToMessage)
+                .ThenInclude(rm => rm.ConversationUser)
+                    .ThenInclude(cu => cu.User)
             .ToListAsync();
     }
 
@@ -74,5 +92,64 @@ public class MessageRepository : IMessageRepository
             _context.Messages.Remove(message);
             await _context.SaveChangesAsync();
         }
+    }
+
+    public async Task SoftDeleteAsync(Guid messageId, string userId)
+    {
+        var message = await _context.Messages
+            .Include(m => m.ConversationUser)
+            .FirstOrDefaultAsync(m => m.Id == messageId);
+        
+        if (message != null && message.ConversationUser.UserId == userId)
+        {
+            message.IsDeleted = true;
+            message.DeletedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task<Message> StarMessageAsync(Guid messageId, string userId)
+    {
+        var message = await _context.Messages
+            .FirstOrDefaultAsync(m => m.Id == messageId && !m.IsDeleted);
+        
+        if (message != null && !message.StarredBy.Contains(userId))
+        {
+            message.StarredBy.Add(userId);
+            await _context.SaveChangesAsync();
+        }
+        
+        return message;
+    }
+
+    public async Task<Message> UnstarMessageAsync(Guid messageId, string userId)
+    {
+        var message = await _context.Messages
+            .FirstOrDefaultAsync(m => m.Id == messageId && !m.IsDeleted);
+        
+        if (message != null && message.StarredBy.Contains(userId))
+        {
+            message.StarredBy.Remove(userId);
+            await _context.SaveChangesAsync();
+        }
+        
+        return message;
+    }
+
+    public async Task<List<Message>> GetStarredMessagesAsync(Guid conversationId, string userId, int count = 50, int skip = 0)
+    {
+        return await _context.Messages
+            .Where(m => m.ConversationId == conversationId && 
+                        !m.IsDeleted &&
+                        m.StarredBy.Contains(userId))
+            .OrderByDescending(m => m.SentAt)
+            .Skip(skip)
+            .Take(count)
+            .Include(m => m.ConversationUser)
+                .ThenInclude(cu => cu.User)
+            .Include(m => m.ReplyToMessage)
+                .ThenInclude(rm => rm.ConversationUser)
+                    .ThenInclude(cu => cu.User)
+            .ToListAsync();
     }
 }

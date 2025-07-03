@@ -37,6 +37,22 @@ namespace Infrastructure.Data
                 .HasValue<VoiceMessage>("Voice")
                 .HasValue<ImageMessage>("Image");
 
+            // Configure Message reply relationship
+            builder.Entity<Message>()
+                .HasOne(m => m.ReplyToMessage)
+                .WithMany()
+                .HasForeignKey(m => m.ReplyToMessageId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure Message StarredBy property as JSON
+            builder.Entity<Message>()
+                .Property(m => m.StarredBy)
+                .HasConversion(
+                    v => v == null ? null : System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions)null),
+                    v => v == null ? new List<string>() : System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions)null)
+                )
+                .HasColumnType("nvarchar(max)");
+
             // Configure VoiceMessage specific properties
             builder.Entity<VoiceMessage>()
                 .Property(vm => vm.TranslatedVoiceUrls)

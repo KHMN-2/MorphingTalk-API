@@ -65,6 +65,7 @@ namespace Application.Services.Chatting
                 IsTranslated = false,
                 TranslatedVoiceUrl = null,
                 Status = MessageStatus.Sent,
+                ReplyToMessageId = message.ReplyToMessageId
             };
 
             // Save the message to the repository

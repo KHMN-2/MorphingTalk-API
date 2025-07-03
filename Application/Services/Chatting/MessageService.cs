@@ -86,7 +86,8 @@ namespace Application.Services.Chatting
                         SentAt = DateTime.UtcNow,
                         IsTranslated = false,
                         TranslatedVoiceUrls = new Dictionary<string, string>(), // Initialize empty dictionary
-                        Status = MessageStatus.Sent
+                        Status = MessageStatus.Sent,
+                        ReplyToMessageId = message.ReplyToMessageId // Set reply reference
                     };
                     
                     // Create translation tracking object

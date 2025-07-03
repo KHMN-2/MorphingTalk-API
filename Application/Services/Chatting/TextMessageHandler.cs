@@ -46,7 +46,8 @@ namespace Application.Services.Chatting
                 ConversationId = conversationId,
                 Status = MessageStatus.Sent,
                 IsTranslated = false,
-                TranslatedContents = new Dictionary<string, string>()
+                TranslatedContents = new Dictionary<string, string>(),
+                ReplyToMessageId = message.ReplyToMessageId
             };
 
             // Save the message to the repository
@@ -84,7 +85,8 @@ namespace Application.Services.Chatting
                 Status = MessageStatus.Sent,
                 IsTranslated = translations.Any(),
                 TranslatedContents = translations,
-                TranslatedContent = translations.Values.FirstOrDefault() // Backward compatibility
+                TranslatedContent = translations.Values.FirstOrDefault(),
+                ReplyToMessageId = message.ReplyToMessageId
             };
 
             // Save the message to the repository

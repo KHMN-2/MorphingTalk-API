@@ -183,8 +183,9 @@ public class ChattingController : ControllerBase
     [HttpGet("conversations/{conversationId}/messages")]
     public async Task<IActionResult> GetMessages(Guid conversationId, [FromQuery] int count = 50, [FromQuery] int skip = 0)
     {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         var messages = await _messageRepo.GetMessagesForConversationAsync(conversationId, count, skip);
-        var result = messages.Select(MessageSummaryDto.FromMessage).ToList();
+        var result = messages.Select(m => MessageSummaryDto.FromMessage(m, userId)).ToList();
 
         return StatusCode(StatusCodes.Status200OK, 
             new ResponseViewModel<List<MessageSummaryDto>>(result, "Messages retrieved successfully", true, StatusCodes.Status200OK));
@@ -226,8 +227,8 @@ public class ChattingController : ControllerBase
                     new ResponseViewModel<string>(null, "You can only delete your own messages", false, StatusCodes.Status403Forbidden));
             }
 
-            // Delete the message
-            await _messageRepo.DeleteAsync(messageId);
+            // Soft delete the message
+            await _messageRepo.SoftDeleteAsync(messageId, userId);
             
             return StatusCode(StatusCodes.Status200OK,
                 new ResponseViewModel<string>(null, "Message deleted successfully", true, StatusCodes.Status200OK));
@@ -239,4 +240,89 @@ public class ChattingController : ControllerBase
         }
     }
 
+    // POST: api/Chatting/messages/{messageId}/star
+    [HttpPost("messages/{messageId}/star")]
+    public async Task<IActionResult> StarMessage(Guid messageId)
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return StatusCode(StatusCodes.Status401Unauthorized,
+                new ResponseViewModel<string>(null, "User not authenticated", false, StatusCodes.Status401Unauthorized));
+        }
+
+        try
+        {
+            var message = await _messageRepo.StarMessageAsync(messageId, userId);
+            if (message == null)
+            {
+                return StatusCode(StatusCodes.Status404NotFound,
+                    new ResponseViewModel<string>(null, "Message not found", false, StatusCodes.Status404NotFound));
+            }
+
+            return StatusCode(StatusCodes.Status200OK,
+                new ResponseViewModel<string>(null, "Message starred successfully", true, StatusCodes.Status200OK));
+        }
+        catch (Exception e)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new ResponseViewModel<string>(null, "An error occurred while starring the message", false, StatusCodes.Status500InternalServerError));
+        }
+    }
+
+    // DELETE: api/Chatting/messages/{messageId}/star
+    [HttpDelete("messages/{messageId}/star")]
+    public async Task<IActionResult> UnstarMessage(Guid messageId)
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return StatusCode(StatusCodes.Status401Unauthorized,
+                new ResponseViewModel<string>(null, "User not authenticated", false, StatusCodes.Status401Unauthorized));
+        }
+
+        try
+        {
+            var message = await _messageRepo.UnstarMessageAsync(messageId, userId);
+            if (message == null)
+            {
+                return StatusCode(StatusCodes.Status404NotFound,
+                    new ResponseViewModel<string>(null, "Message not found", false, StatusCodes.Status404NotFound));
+            }
+
+            return StatusCode(StatusCodes.Status200OK,
+                new ResponseViewModel<string>(null, "Message unstarred successfully", true, StatusCodes.Status200OK));
+        }
+        catch (Exception e)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new ResponseViewModel<string>(null, "An error occurred while unstarring the message", false, StatusCodes.Status500InternalServerError));
+        }
+    }
+
+    // GET: api/Chatting/conversations/{conversationId}/messages/starred
+    [HttpGet("conversations/{conversationId}/messages/starred")]
+    public async Task<IActionResult> GetStarredMessages(Guid conversationId, [FromQuery] int count = 50, [FromQuery] int skip = 0)
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return StatusCode(StatusCodes.Status401Unauthorized,
+                new ResponseViewModel<string>(null, "User not authenticated", false, StatusCodes.Status401Unauthorized));
+        }
+
+        try
+        {
+            var messages = await _messageRepo.GetStarredMessagesAsync(conversationId, userId, count, skip);
+            var result = messages.Select(m => MessageSummaryDto.FromMessage(m, userId)).ToList();
+
+            return StatusCode(StatusCodes.Status200OK,
+                new ResponseViewModel<List<MessageSummaryDto>>(result, "Starred messages retrieved successfully", true, StatusCodes.Status200OK));
+        }
+        catch (Exception e)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new ResponseViewModel<string>(null, "An error occurred while retrieving starred messages", false, StatusCodes.Status500InternalServerError));
+        }
+    }
 }

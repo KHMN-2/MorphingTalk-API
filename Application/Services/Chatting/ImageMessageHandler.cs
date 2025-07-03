@@ -37,6 +37,7 @@ namespace Application.Services.Chatting
                 ConversationUserId = message.SenderConversationUserId,
                 ConversationId = conversationId,
                 Status = MessageStatus.Sent,
+                ReplyToMessageId = message.ReplyToMessageId
             };
 
             // Save the message to the repository
