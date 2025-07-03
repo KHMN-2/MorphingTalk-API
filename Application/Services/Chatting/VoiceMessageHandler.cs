@@ -85,7 +85,7 @@ namespace Application.Services.Chatting
                 throw new ArgumentException("Voice file URL is required for voice message translation");
 
           
-            string modelId = (!user.IsTrainedVoice || message.UseRobotVoice == true) ? "DRRamly" : user.VoiceModel?.Name ?? "DRRamly";
+            string modelId = (!user.IsTrainedVoice || message.UseRobotVoice == true) ? "DRRamly" : user.VoiceModel?.Id ?? "DRRamly";
             string sourceLanguage = user.NativeLanguage ?? "en";
 
 

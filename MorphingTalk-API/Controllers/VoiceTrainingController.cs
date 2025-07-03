@@ -94,10 +94,10 @@ namespace MorphingTalk_API.Controllers
                     ".flac" => "audio/flac",
                     _ => "application/octet-stream"
                 };
-                
+                var voiceModelId = Guid.NewGuid().ToString();
                 fileContent.Headers.ContentType = new MediaTypeHeaderValue(mimeType);
                 form.Add(fileContent, "file", file.FileName);
-                form.Add(new StringContent(userId), "model_id");
+                form.Add(new StringContent(voiceModelId), "model_id");
                 form.Add(new StringContent(user.NativeLanguage ?? "en"), "speaker_lang");
 
                 // Send training request to AI service
@@ -122,7 +122,6 @@ namespace MorphingTalk_API.Controllers
                 // Update user to indicate training is in progress
                 user.IsTrainedVoice = false; // Training in progress
                 
-                var voiceModelId = Guid.NewGuid().ToString();
                 user.VoiceModel = new UserVoiceModel
                 {
                     Id = voiceModelId, // Generate unique ID
@@ -231,7 +230,7 @@ namespace MorphingTalk_API.Controllers
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", aiJwtSecret);
 
                 // Call external AI service to delete the model
-                var url = $"{aiBaseLink}/models/{user.Id}";
+                var url = $"{aiBaseLink}/models/{user.VoiceModelId}";
                 var response = await client.DeleteAsync(url);
 
                 if (response.IsSuccessStatusCode)

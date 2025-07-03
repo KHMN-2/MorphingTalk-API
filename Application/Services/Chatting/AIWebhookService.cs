@@ -176,8 +176,8 @@ namespace Application.Services.Chatting
         {
             try
             {
-                // Find the user by matching the user ID with the model ID (model_id sent to AI service is the userId)
-                var user = await _userRepository.GetUserByIdAsync(payload.modelId);
+                // Find the user by matching the voice model ID with the model ID from payload
+                var user = await _userRepository.GetUserByVoiceModelIdAsync(payload.modelId);
                 
                 if (user == null)
                 {

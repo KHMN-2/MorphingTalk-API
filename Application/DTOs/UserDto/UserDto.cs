@@ -36,6 +36,7 @@ namespace Application.DTOs.UserDto
             };
         }
     }
+    
     public class LoggedInUserDto : UserDto
     {
         public bool IsTrainedVoice { get; set; }

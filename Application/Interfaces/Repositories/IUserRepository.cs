@@ -14,6 +14,8 @@ namespace Application.Interfaces.Repositories
 
         public Task<User> GetUserByEmailAsync(string email);
 
+        public Task<User> GetUserByVoiceModelIdAsync(string voiceModelId);
+
         public Task<User> AddUserAsync(User user);
 
         public Task<User> UpdateUserAsync(User user);

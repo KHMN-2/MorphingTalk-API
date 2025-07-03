@@ -115,7 +115,20 @@ namespace Infrastructure.Repositories
                 throw new KeyNotFoundException("User not found");
             }
             return user;
-        }        
+        }
+
+        public async Task<User> GetUserByVoiceModelIdAsync(string voiceModelId)
+        {
+            var user = await _identityContext.Users
+                .Include(u => u.VoiceModel)
+                .FirstOrDefaultAsync(u => u.VoiceModelId == voiceModelId);
+            if (user == null)
+            {
+                throw new KeyNotFoundException("User not found");
+            }
+            return user;
+        }
+        
         public async Task<User> UpdateUserAsync(User user)
         {
             var existingUser = await _identityContext.Users.FindAsync(user.Id);
