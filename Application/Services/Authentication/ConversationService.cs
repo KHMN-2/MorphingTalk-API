@@ -179,7 +179,8 @@ namespace Application.Services.Authentication
             var cu = new ConversationUser
             {
                 ConversationId = conversationId,
-                UserId = user.Id
+                UserId = user.Id,
+                Role = Roles.Member,
             };
             await _conversationUserRepo.AddAsync(cu);
 
