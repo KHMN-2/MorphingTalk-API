@@ -364,3 +364,7 @@ FodyWeavers.xsd
 
 # VSCode Configs
 .vscode
+
+# Firebase service account key (contains sensitive credentials)
+firebase-service-account-key.json
+**/firebase-service-account-key.json

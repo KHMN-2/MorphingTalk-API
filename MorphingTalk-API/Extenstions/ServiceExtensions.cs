@@ -21,6 +21,8 @@ using Application.Interfaces.Services.FileService;
 using Application.Services.FileService;
 using Application.Interfaces.Services;
 using Application.Services;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 
 namespace MorphingTalk_API.Extensions
 {
@@ -73,7 +75,8 @@ namespace MorphingTalk_API.Extensions
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(options =>
+            })
+            .AddJwtBearer(options =>
             {
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -87,6 +90,19 @@ namespace MorphingTalk_API.Extensions
                     )
                 };
             });
+
+            // Initialize Firebase Admin SDK
+            var firebaseConfig = configuration.GetSection("Firebase");
+            var serviceAccountKeyPath = firebaseConfig["ServiceAccountKeyPath"];
+            
+            if (!string.IsNullOrEmpty(serviceAccountKeyPath) && File.Exists(serviceAccountKeyPath))
+            {
+                FirebaseApp.Create(new AppOptions()
+                {
+                    Credential = GoogleCredential.FromFile(serviceAccountKeyPath),
+                    ProjectId = firebaseConfig["ProjectId"]
+                });
+            }
 
             services.Configure<SmtpSettings>(configuration.GetSection("SmtpSettings"));
             services.AddTransient<EmailService>();

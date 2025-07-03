@@ -9,6 +9,7 @@ using Domain.Entities.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Caching.Memory;
 using static Application.Services.Authentication.OTPService;
+using FirebaseAdmin.Auth;
 
 namespace Application.Services.Authentication
 {
@@ -95,6 +96,72 @@ namespace Application.Services.Authentication
                 return token;
             }
             throw new Exception("Invalid login details");
+        }
+
+        public async Task<string> LoginWithFirebase(string idToken)
+        {
+            try
+            {
+                // Verify the Firebase ID token
+                var decodedToken = await FirebaseAuth.DefaultInstance.VerifyIdTokenAsync(idToken);
+                
+                if (decodedToken == null)
+                {
+                    throw new Exception("Invalid Firebase ID token");
+                }
+
+                // Extract user information from the token
+                var email = decodedToken.Claims.ContainsKey("email") ? decodedToken.Claims["email"].ToString() : "";
+                var name = decodedToken.Claims.ContainsKey("name") ? decodedToken.Claims["name"].ToString() : "";
+                var picture = decodedToken.Claims.ContainsKey("picture") ? decodedToken.Claims["picture"].ToString() : "";
+                var emailVerified = decodedToken.Claims.ContainsKey("email_verified") ? 
+                    bool.Parse(decodedToken.Claims["email_verified"].ToString()) : false;
+
+                if (string.IsNullOrEmpty(email))
+                {
+                    throw new Exception("Email not found in Firebase token");
+                }
+
+                // Check if user exists
+                var existingUser = await _userManager.FindByEmailAsync(email);
+                
+                if (existingUser != null)
+                {
+                    // User exists, generate JWT token
+                    var token = await _tokenService.GenerateJwtToken(existingUser);
+                    return token;
+                }
+                else
+                {
+                    // User doesn't exist, create new user
+                    var newUser = new User
+                    {
+                        UserName = email,
+                        Email = email,
+                        FullName = !string.IsNullOrEmpty(name) ? name : email,
+                        EmailConfirmed = emailVerified,
+                        CreatedOn = DateTime.Now,
+                        LastUpdatedOn = DateTime.Now,
+                        ProfilePicturePath = picture,
+                        IsDeactivated = false,
+                        IsFirstLogin = true,
+                        PastProfilePicturePaths = !string.IsNullOrEmpty(picture) ? new List<string> { picture } : new List<string>()
+                    };
+
+                    var result = await _userManager.CreateAsync(newUser);
+                    if (result.Succeeded)
+                    {
+                        var token = await _tokenService.GenerateJwtToken(newUser);
+                        return token;
+                    }
+                    
+                    throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Firebase login failed: {ex.Message}");
+            }
         }
 
         public async Task<string> Register(User user, string password)

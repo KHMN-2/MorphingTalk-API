@@ -101,6 +101,36 @@ namespace MorphingTalk_API.Controllers
             }
         }
 
+        [HttpPost("login/firebase")]
+        public async Task<IActionResult> LoginWithFirebase(FirebaseLoginDto model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new AuthResponseDto
+                {
+                    Success = false,
+                    Message = "Invalid Firebase login details"
+                });
+
+            try
+            {
+                var token = await _authService.LoginWithFirebase(model.IdToken);
+                return Ok(new AuthResponseDto
+                {
+                    Success = true,
+                    Message = "Firebase login successful",
+                    Token = token
+                });
+            }
+            catch (Exception e)
+            {
+                return Unauthorized(new AuthResponseDto
+                {
+                    Success = false,
+                    Message = e.Message
+                });
+            }
+        }
+
         [HttpGet("SendOTP")]
         public async Task<IActionResult> SendOTP(string email)
         {

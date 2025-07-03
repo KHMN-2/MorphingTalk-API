@@ -49,7 +49,7 @@ namespace Infrastructure.Data
                 .Property(m => m.StarredBy)
                 .HasConversion(
                     v => v == null ? null : System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions)null),
-                    v => v == null ? new List<string>() : System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions)null)
+                    v => DeserializeStarredBy(v)
                 )
                 .HasColumnType("nvarchar(max)");
 
@@ -58,7 +58,7 @@ namespace Infrastructure.Data
                 .Property(vm => vm.TranslatedVoiceUrls)
                 .HasConversion(
                     v => v == null ? null : System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions)null),
-                    v => v == null ? null : System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(v, (System.Text.Json.JsonSerializerOptions)null)
+                    v => DeserializeDictionary(v)
                 )
                 .HasColumnType("nvarchar(max)");
 
@@ -67,7 +67,7 @@ namespace Infrastructure.Data
                 .Property(tm => tm.TranslatedContents)
                 .HasConversion(
                     v => v == null ? null : System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions)null),
-                    v => v == null ? null : System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(v, (System.Text.Json.JsonSerializerOptions)null)
+                    v => DeserializeDictionary(v)
                 )
                 .HasColumnType("nvarchar(max)");
 
@@ -129,6 +129,36 @@ namespace Infrastructure.Data
                 .WithMany()
                 .HasForeignKey(u => u.VoiceModelId)
                 .OnDelete(DeleteBehavior.SetNull);
+        }
+
+        private static List<string> DeserializeStarredBy(string? value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return new List<string>();
+            
+            try
+            {
+                return System.Text.Json.JsonSerializer.Deserialize<List<string>>(value, (System.Text.Json.JsonSerializerOptions)null) ?? new List<string>();
+            }
+            catch (System.Text.Json.JsonException)
+            {
+                return new List<string>();
+            }
+        }
+
+        private static Dictionary<string, string>? DeserializeDictionary(string? value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return null;
+            
+            try
+            {
+                return System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(value, (System.Text.Json.JsonSerializerOptions)null);
+            }
+            catch (System.Text.Json.JsonException)
+            {
+                return null;
+            }
         }
     }
 }

@@ -1,0 +1,30 @@
+### Firebase Login
+POST https://localhost:7128/api/auth/login/firebase
+Content-Type: application/json
+
+{
+  "IdToken": "YOUR_FIREBASE_ID_TOKEN_HERE"
+}
+
+### Regular Login (for comparison)
+POST https://localhost:7128/api/auth/login
+Content-Type: application/json
+
+{
+  "Email": "user@example.com",
+  "Password": "password123"
+}
+
+### Register
+POST https://localhost:7128/api/auth/register
+Content-Type: application/json
+
+{
+  "Email": "user@example.com",
+  "Password": "password123",
+  "FullName": "John Doe",
+  "gender": "Male",
+  "nativeLanguage": "English",
+  "aboutStatus": "Hello!",
+  "profilePicturePath": "path/to/profile.jpg"
+} 

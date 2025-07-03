@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Web;
 using Application.Interfaces.Services.Chatting;
@@ -114,32 +115,93 @@ namespace Application.Services.Chatting
     // MyMemory API response models
     public class MyMemoryResponse
     {
+        [JsonPropertyName("responseData")]
         public MyMemoryResponseData ResponseData { get; set; }
-        public string ResponseStatus { get; set; }
+        
+        [JsonPropertyName("responseStatus")]
+        public int ResponseStatus { get; set; }
+        
+        [JsonPropertyName("matches")]
         public MyMemoryMatch[] Matches { get; set; }
+        
+        [JsonPropertyName("quotaFinished")]
+        public bool QuotaFinished { get; set; }
+        
+        [JsonPropertyName("mtLangSupported")]
+        public object MtLangSupported { get; set; }
+        
+        [JsonPropertyName("responseDetails")]
+        public string ResponseDetails { get; set; }
+        
+        [JsonPropertyName("responderId")]
+        public object ResponderId { get; set; }
+        
+        [JsonPropertyName("exception_code")]
+        public object ExceptionCode { get; set; }
     }
 
     public class MyMemoryResponseData
     {
+        [JsonPropertyName("translatedText")]
         public string TranslatedText { get; set; }
-        public string Match { get; set; }
+        
+        [JsonPropertyName("match")]
+        public decimal Match { get; set; }
     }
 
     public class MyMemoryMatch
     {
+        [JsonPropertyName("id")]
         public string Id { get; set; }
+        
+        [JsonPropertyName("segment")]
         public string Segment { get; set; }
+        
+        [JsonPropertyName("translation")]
         public string Translation { get; set; }
+        
+        [JsonPropertyName("source")]
         public string Source { get; set; }
+        
+        [JsonPropertyName("target")]
         public string Target { get; set; }
-        public string Quality { get; set; }
-        public string Reference { get; set; }
-        public string UsageCount { get; set; }
+        
+        [JsonPropertyName("quality")]
+        public JsonElement Quality { get; set; }
+        
+        [JsonPropertyName("reference")]
+        public object Reference { get; set; }
+        
+        [JsonPropertyName("usage-count")]
+        public int UsageCount { get; set; }
+        
+        [JsonPropertyName("subject")]
         public string Subject { get; set; }
+        
+        [JsonPropertyName("created-by")]
         public string CreatedBy { get; set; }
+        
+        [JsonPropertyName("last-updated-by")]
         public string LastUpdatedBy { get; set; }
+        
+        [JsonPropertyName("create-date")]
         public string CreateDate { get; set; }
+        
+        [JsonPropertyName("last-update-date")]
         public string LastUpdateDate { get; set; }
-        public string Match { get; set; }
+        
+        [JsonPropertyName("match")]
+        public decimal MatchValue { get; set; }
+        
+        [JsonPropertyName("penalty")]
+        public int Penalty { get; set; }
+        
+        // Helper property to get quality as string regardless of JSON type
+        public string QualityValue => Quality.ValueKind switch
+        {
+            JsonValueKind.Number => Quality.GetInt32().ToString(),
+            JsonValueKind.String => Quality.GetString(),
+            _ => "0"
+        };
     }
 } 

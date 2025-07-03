@@ -14,6 +14,7 @@ namespace Application.Interfaces.Services.Authentication
     public interface IAuthService
     {
         public Task<string> Login(string email, string password);
+        public Task<string> LoginWithFirebase(string idToken);
         public Task<string> Register(User user, string password);
         public Task<bool> ResetPassword(User user, string password, string token);
         public Task<bool> SendOTP(string email);
