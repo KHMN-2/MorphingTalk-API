@@ -137,7 +137,84 @@ namespace MorphingTalk_API.Hubs
             // Notify all participants that the call has ended
             await Clients.Group(callGroup)
                 .SendAsync("CallEnded", Context.UserIdentifier, conversationId);
-        }        // Typing Indicator Methods
+        }
+
+        // Group Call Signaling Methods (for P2P mesh topology)
+        
+        /// <summary>
+        /// Send WebRTC offer to all participants in a group call
+        /// </summary>
+        public async Task SendGroupOffer(string conversationId, object offer)
+        {
+            var callGroup = $"call_{conversationId}";
+            _logger.LogInformation($"Sending group WebRTC offer from {Context.UserIdentifier} in conversation {conversationId}");
+            
+            await Clients.GroupExcept(callGroup, Context.ConnectionId)
+                .SendAsync("ReceiveGroupOffer", Context.UserIdentifier, offer, conversationId);
+        }
+
+        /// <summary>
+        /// Send WebRTC answer to all participants in a group call
+        /// </summary>
+        public async Task SendGroupAnswer(string conversationId, object answer)
+        {
+            var callGroup = $"call_{conversationId}";
+            _logger.LogInformation($"Sending group WebRTC answer from {Context.UserIdentifier} in conversation {conversationId}");
+            
+            await Clients.GroupExcept(callGroup, Context.ConnectionId)
+                .SendAsync("ReceiveGroupAnswer", Context.UserIdentifier, answer, conversationId);
+        }
+
+        /// <summary>
+        /// Send ICE candidates to all participants in a group call
+        /// </summary>
+        public async Task SendGroupIceCandidate(string conversationId, object candidate)
+        {
+            var callGroup = $"call_{conversationId}";
+            _logger.LogInformation($"Sending group ICE candidate from {Context.UserIdentifier} in conversation {conversationId}");
+            
+            await Clients.GroupExcept(callGroup, Context.ConnectionId)
+                .SendAsync("ReceiveGroupIceCandidate", Context.UserIdentifier, candidate, conversationId);
+        }
+
+        /// <summary>
+        /// Get list of participants currently in a call
+        /// </summary>
+        public async Task GetCallParticipants(string conversationId)
+        {
+            var callGroup = $"call_{conversationId}";
+            _logger.LogInformation($"Getting call participants for conversation {conversationId}");
+            
+            // This is a simplified implementation
+            // In production, you might want to track participants in a more sophisticated way
+            await Clients.Caller.SendAsync("CallParticipantsResponse", conversationId, new string[] { Context.UserIdentifier });
+        }
+
+        /// <summary>
+        /// Notify all participants when someone joins a group call
+        /// </summary>
+        public async Task NotifyGroupCallParticipantJoined(string conversationId, string userId)
+        {
+            var callGroup = $"call_{conversationId}";
+            _logger.LogInformation($"User {userId} joined group call in conversation {conversationId}");
+            
+            await Clients.GroupExcept(callGroup, Context.ConnectionId)
+                .SendAsync("GroupCallParticipantJoined", userId, conversationId);
+        }
+
+        /// <summary>
+        /// Notify all participants when someone leaves a group call
+        /// </summary>
+        public async Task NotifyGroupCallParticipantLeft(string conversationId, string userId)
+        {
+            var callGroup = $"call_{conversationId}";
+            _logger.LogInformation($"User {userId} left group call in conversation {conversationId}");
+            
+            await Clients.Group(callGroup)
+                .SendAsync("GroupCallParticipantLeft", userId, conversationId);
+        }
+
+        // Typing Indicator Methods
         
         /// <summary>
         /// User started typing in a conversation
