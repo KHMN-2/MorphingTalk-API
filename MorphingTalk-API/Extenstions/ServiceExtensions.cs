@@ -52,7 +52,7 @@ namespace MorphingTalk_API.Extensions
             services.AddScoped<IFriendshipService, FriendshipService>();
             services.AddScoped<IConversationService, ConversationService>();
             services.AddScoped<IAIWebhookService, AIWebhookService>();
-            services.AddScoped<ITextTranslationService, MyMemoryTranslationService>();
+            services.AddScoped<ITextTranslationService, AzureTranslationService>();
 
             services.AddScoped<IFileValidator, FileValidator>();
             services.AddScoped<IFilePathProvider, FilePathProvider>();

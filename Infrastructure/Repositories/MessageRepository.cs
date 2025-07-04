@@ -116,6 +116,7 @@ public class MessageRepository : IMessageRepository
         if (message != null && !message.StarredBy.Contains(userId))
         {
             message.StarredBy.Add(userId);
+            _context.Update(message);
             await _context.SaveChangesAsync();
         }
         
@@ -130,6 +131,7 @@ public class MessageRepository : IMessageRepository
         if (message != null && message.StarredBy.Contains(userId))
         {
             message.StarredBy.Remove(userId);
+            _context.Update(message);
             await _context.SaveChangesAsync();
         }
         
@@ -152,6 +154,5 @@ public class MessageRepository : IMessageRepository
             .ToListAsync();
 
         return ret.Where(m => m.StarredBy.Contains(userId)).ToList();
-
     }
 }

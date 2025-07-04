@@ -229,6 +229,9 @@ public class ChattingController : ControllerBase
 
             // Soft delete the message
             await _messageRepo.SoftDeleteAsync(messageId, userId);
+
+            // Notify all clients in the conversation that the message has been deleted
+            await _chatNotificationService.NotifyMessageDeleted(message.ConversationId, messageId, userId);
             
             return StatusCode(StatusCodes.Status200OK,
                 new ResponseViewModel<string>(null, "Message deleted successfully", true, StatusCodes.Status200OK));

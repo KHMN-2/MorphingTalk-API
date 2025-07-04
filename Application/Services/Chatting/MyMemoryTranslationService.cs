@@ -68,9 +68,9 @@ namespace Application.Services.Chatting
             try
             {
                 // MyMemory API endpoint
-                var encodedText = HttpUtility.UrlEncode(text);
-                var langPair = $"{sourceLanguage}|{targetLanguage}";
-                var url = $"https://api.mymemory.translated.net/get?q={encodedText}&langpair={langPair}";
+                //var encodedText = HttpUtility.UrlEncode(text);
+                var langPair = $"en|ar";
+                var url = $"https://api.mymemory.translated.net/get?q=my name is&langpair={langPair}";
 
                 var response = await _httpClient.GetAsync(url);
 

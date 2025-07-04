@@ -82,6 +82,23 @@ namespace Application.Services.Chatting
             await _hubContext.Clients.User(userId)
                 .SendAsync("VoiceTrainingCompleted", notification);
         }
+
+        public async Task NotifyMessageDeleted(Guid conversationId, Guid messageId, string deletedByUserId)
+        {
+            var deleteNotification = new
+            {
+                messageId = messageId,
+                deletedByUserId = deletedByUserId,
+                timestamp = DateTime.UtcNow,
+                type = "message_deleted"
+            };
+
+            _logger.LogInformation("Message deleted - ConversationId: {ConversationId}, MessageId: {MessageId}, DeletedByUserId: {DeletedByUserId}", conversationId, messageId, deletedByUserId);
+
+            // Notify all clients in the conversation that a message has been deleted
+            await _hubContext.Clients.Group(conversationId.ToString())
+                .SendAsync("MessageDeleted", deleteNotification);
+        }
     }
 }
 

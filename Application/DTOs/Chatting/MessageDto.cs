@@ -22,8 +22,8 @@ namespace Application.DTOs.Chatting
         public string ConversationId { get; set; }
         
         // Reply functionality
-        public Guid? ReplyToMessageId { get; set; }
-        public MessageSummaryDto? ReplyToMessage { get; set; }
+        public string ReplyToMessageId { get; set; }
+        public MessageSummaryDto ReplyToMessage { get; set; } = null;
         
         // Star functionality
         public bool IsStarred { get; set; } // Will be set based on current user
@@ -31,7 +31,7 @@ namespace Application.DTOs.Chatting
         // Soft delete functionality
         public bool IsDeleted { get; set; }
 
-        public static MessageSummaryDto FromMessage(Message message, string? currentUserId = null)
+        public static MessageSummaryDto FromMessage(Message message, string? currentUserId = null, bool reply = true)
         {
             var dto = new MessageSummaryDto
             {
@@ -44,8 +44,8 @@ namespace Application.DTOs.Chatting
                 SentAt = message.SentAt,
                 MessageStatus = message.Status.ToString(),
                 ConversationId = message.ConversationId.ToString(),
-                ReplyToMessageId = message.ReplyToMessageId,
-                ReplyToMessage = message.ReplyToMessage != null ? FromMessage(message.ReplyToMessage, currentUserId) : null,
+                ReplyToMessageId = reply ? message.ReplyToMessageId.ToString() : null,
+                ReplyToMessage = reply ? message.ReplyToMessage != null ? FromMessage(message.ReplyToMessage, currentUserId, false) : null : null,
                 IsStarred = currentUserId != null && message.StarredBy.Contains(currentUserId),
                 IsDeleted = message.IsDeleted
             };

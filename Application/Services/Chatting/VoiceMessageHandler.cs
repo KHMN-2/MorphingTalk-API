@@ -105,7 +105,7 @@ namespace Application.Services.Chatting
             string mimeType = fileExtension switch
             {
                 ".wav" => "audio/wav",
-                ".m4a" => "audio/m4a",
+                ".m4a" => "audio/mp4",
                 _ => "application/octet-stream" // fallback
             };
 

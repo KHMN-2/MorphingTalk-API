@@ -74,6 +74,7 @@ namespace Application.Services.Chatting
 
             // Perform translation
             var translations = await _textTranslationService.TranslateTextAsync(message.Text, sourceLanguage, targetLanguages);
+            translations[sourceLanguage] = message.Text;
 
             // Create the text message with translations
             var textMessage = new TextMessage

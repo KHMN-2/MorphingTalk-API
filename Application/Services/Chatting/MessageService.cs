@@ -69,6 +69,17 @@ namespace Application.Services.Chatting
                 {
                     // For text messages, we handle translation directly
                     await handler.HandleTranslationAsync(message, conversationId, userId, targetLanguages);
+                    // Get the newly created message from repository to send notification
+                    var tmessages = await _messageRepository.GetMessagesForConversationAsync(conversationId, 1, 0);
+                    var tlatestMessage = tmessages.FirstOrDefault();
+
+                    if (tlatestMessage != null)
+                    {
+                        // Notify connected clients about the new message
+                        await _chatNotificationService.NotifyMessageSent(conversationId, tlatestMessage);
+                    }
+
+                    return "";
                 }
                 else
                 {
