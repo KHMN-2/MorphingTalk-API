@@ -16,7 +16,6 @@ using Application.Interfaces.Services.Authentication;
 using Application.Interfaces.Services.Chatting;
 using Application.Services.Chatting;
 using MorphingTalk_API.Hubs;
-using Application.Automapper;
 using Application.Interfaces.Services.FileService;
 using Application.Services.FileService;
 using Application.Interfaces.Services;
@@ -106,8 +105,6 @@ namespace MorphingTalk_API.Extensions
 
             services.Configure<SmtpSettings>(configuration.GetSection("SmtpSettings"));
             services.AddTransient<EmailService>();
-
-			services.AddAutoMapper(typeof(MappingProfile));
 
 		}
 	}

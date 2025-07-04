@@ -1,0 +1,1274 @@
+{
+  "info": {
+    "name": "MorphingTalk-API Complete Test Collection",
+    "description": "Complete Postman collection for testing all MorphingTalk-API endpoints including Authentication, Chatting, Voice Training, File Management, and more",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://localhost:7218",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "conversationId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "messageId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"TestPassword123!\",\n  \"fullName\": \"Test User\",\n  \"gender\": \"male\",\n  \"nativeLanguage\": \"en\",\n  \"aboutStatus\": \"Hello, I'm testing MorphingTalk!\",\n  \"profilePicturePath\": \"/uploads/profile-pictures/default.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Auth", "register"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"TestPassword123!\",\n  \"rememberMe\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Firebase Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idToken\": \"YOUR_FIREBASE_ID_TOKEN_HERE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Auth/login/firebase",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Auth", "login", "firebase"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send OTP",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/Auth/SendOTP?email=test@example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Auth", "SendOTP"],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "test@example.com"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Auth/VerifyOTP",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Auth", "VerifyOTP"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Check Account",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/Auth/CheckAccount?email=test@example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Auth", "CheckAccount"],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "test@example.com"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Forget Password",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/Auth/ForgetEmail?email=test@example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Auth", "ForgetEmail"],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "test@example.com"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"newPassword\": \"NewPassword123!\",\n  \"token\": \"RESET_TOKEN_FROM_OTP_VERIFICATION\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Auth/ResetPassword",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Auth", "ResetPassword"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. User Management",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/User/GetAllUsers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "User", "GetAllUsers"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Logged In User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/User/GetLoggedInUser",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "User", "GetLoggedInUser"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/User/GetUserById/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "User", "GetUserById", "{{userId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User by Email",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/User/GetUserByEmail/test@example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "User", "GetUserByEmail", "test@example.com"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Updated Test User\",\n  \"gender\": \"female\",\n  \"nativeLanguage\": \"es\",\n  \"aboutStatus\": \"Updated status message\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/User/UpdateUser",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "User", "UpdateUser"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Profile Picture",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/path/to/profile-picture.jpg"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/User/UpdateProfilePicture",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "User", "UpdateProfilePicture"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/User/DeleteLoggedUser",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "User", "DeleteLoggedUser"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Chatting & Conversations",
+      "item": [
+        {
+          "name": "Get My Conversations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Chatting/conversations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Chatting", "conversations"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Conversation by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Chatting/conversations/{{conversationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Chatting", "conversations", "{{conversationId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Conversation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Test Conversation\",\n  \"description\": \"A test conversation for API testing\",\n  \"participantEmails\": [\"friend@example.com\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Chatting/conversations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Chatting", "conversations"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Conversation",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Conversation Title\",\n  \"description\": \"Updated description\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Chatting/conversations/{{conversationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Chatting", "conversations", "{{conversationId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add User to Conversation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newuser@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Chatting/conversations/{{conversationId}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Chatting", "conversations", "{{conversationId}}", "users"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Remove User from Conversation",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Chatting/conversations/{{conversationId}}/users/user@example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Chatting", "conversations", "{{conversationId}}", "users", "user@example.com"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Users in Conversation",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Chatting/conversations/{{conversationId}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Chatting", "conversations", "{{conversationId}}", "users"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete/Leave Conversation",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Chatting/conversations/{{conversationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Chatting", "conversations", "{{conversationId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Messages",
+      "item": [
+        {
+          "name": "Send Text Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": 0,\n  \"text\": \"Hello! This is a test message.\",\n  \"needTranslation\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Chatting/conversations/{{conversationId}}/messages",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Chatting", "conversations", "{{conversationId}}", "messages"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Voice Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": 1,\n  \"voiceFileUrl\": \"/uploads/audio/test-voice.wav\",\n  \"durationSeconds\": 5,\n  \"useRobotVoice\": false,\n  \"needTranslation\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Chatting/conversations/{{conversationId}}/messages",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Chatting", "conversations", "{{conversationId}}", "messages"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Image Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": 2,\n  \"imageUrl\": \"/uploads/images/test-image.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Chatting/conversations/{{conversationId}}/messages",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Chatting", "conversations", "{{conversationId}}", "messages"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Reply Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": 0,\n  \"text\": \"This is a reply to the previous message.\",\n  \"replyToMessageId\": \"{{messageId}}\",\n  \"needTranslation\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Chatting/conversations/{{conversationId}}/messages",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Chatting", "conversations", "{{conversationId}}", "messages"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Messages",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Chatting/conversations/{{conversationId}}/messages?count=50&skip=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Chatting", "conversations", "{{conversationId}}", "messages"],
+              "query": [
+                {
+                  "key": "count",
+                  "value": "50"
+                },
+                {
+                  "key": "skip",
+                  "value": "0"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Message",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Chatting/messages/{{messageId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Chatting", "messages", "{{messageId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Star Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Chatting/messages/{{messageId}}/star",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Chatting", "messages", "{{messageId}}", "star"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unstar Message",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Chatting/messages/{{messageId}}/star",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Chatting", "messages", "{{messageId}}", "star"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Starred Messages",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Chatting/conversations/{{conversationId}}/messages/starred?count=50&skip=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Chatting", "conversations", "{{conversationId}}", "messages", "starred"],
+              "query": [
+                {
+                  "key": "count",
+                  "value": "50"
+                },
+                {
+                  "key": "skip",
+                  "value": "0"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. Friendship Management",
+      "item": [
+        {
+          "name": "Get Friends",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Friendship",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Friendship"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Blocked Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Friendship/blocked",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Friendship", "blocked"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Friend",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Friendship/add/friend@example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Friendship", "add", "friend@example.com"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Friend",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Friendship/remove/friend@example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Friendship", "remove", "friend@example.com"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Block User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Friendship/block/user@example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Friendship", "block", "user@example.com"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unblock User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Friendship/unblock/user@example.com",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Friendship", "unblock", "user@example.com"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "6. Voice Training",
+      "item": [
+        {
+          "name": "Train Voice Model",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/path/to/voice-sample.wav"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/VoiceTraining/train",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "VoiceTraining", "train"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Training Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/VoiceTraining/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "VoiceTraining", "status"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Voice Model",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/VoiceTraining/model",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "VoiceTraining", "model"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "7. File Management",
+      "item": [
+        {
+          "name": "Upload Document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/path/to/document.pdf"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/File/document",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "File", "document"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Image",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/path/to/image.jpg"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/File/image",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "File", "image"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Video",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/path/to/video.mp4"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/File/video",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "File", "video"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Audio",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/path/to/audio.wav"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/File/audio",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "File", "audio"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete File",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/File/uploads/test-file.jpg",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "File", "uploads", "test-file.jpg"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8. Call Management",
+      "item": [
+        {
+          "name": "Start Call",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetUserId\": \"TARGET_USER_ID\",\n  \"conversationId\": \"{{conversationId}}\",\n  \"callType\": \"audio\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Call/start",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Call", "start"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Respond to Call",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"callerId\": \"CALLER_USER_ID\",\n  \"conversationId\": \"{{conversationId}}\",\n  \"accepted\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Call/respond",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Call", "respond"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "End Call",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversationId\": \"{{conversationId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Call/end",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Call", "end"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Call Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/Call/status/{{conversationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Call", "status", "{{conversationId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "9. Webhooks",
+      "item": [
+        {
+          "name": "AI Inference Result Webhook",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"requestId\": \"test-request-123\",\n  \"translatedUrls\": {\n    \"en\": \"http://example.com/translated-en.wav\",\n    \"es\": \"http://example.com/translated-es.wav\"\n  },\n  \"success\": true,\n  \"errorMessage\": null\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Webhook/inference-result",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Webhook", "inference-result"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "AI Training Result Webhook",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"requestId\": \"training-request-123\",\n  \"modelId\": \"voice-model-456\",\n  \"success\": true,\n  \"errorMessage\": null\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Webhook/training-result",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Webhook", "training-result"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "10. Test Endpoints",
+      "item": [
+        {
+          "name": "Test Firebase Setup",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/TestFirebase/verify-firebase",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "TestFirebase", "verify-firebase"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Firebase Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idToken\": \"YOUR_FIREBASE_ID_TOKEN_HERE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/TestFirebase/test-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "TestFirebase", "test-token"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Test Webhook Payload",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"requestId\": \"test-request-123\",\n  \"modelId\": \"test-model-456\",\n  \"success\": true,\n  \"errorMessage\": null\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/Test/webhook-test",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "Test", "webhook-test"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+} 

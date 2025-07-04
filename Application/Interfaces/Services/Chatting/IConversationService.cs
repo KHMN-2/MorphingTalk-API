@@ -18,3 +18,5 @@ namespace Application.Interfaces.Services.Chatting
         Task<ResponseViewModel<string>> DeleteOrLeaveConversationAsync(Guid conversationId, string userId);
     }
 }
+
+

@@ -34,3 +34,5 @@ namespace Application.Interfaces.Repositories
 
     }
 }
+
+

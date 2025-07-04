@@ -14,3 +14,5 @@ namespace Application.DTOs.Calls
         public string CallType { get; set; } = string.Empty; // "audio" or "video"
     }
 }
+
+

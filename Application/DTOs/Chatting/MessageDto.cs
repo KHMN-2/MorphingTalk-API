@@ -4,18 +4,6 @@ using System.Collections.Generic;
 
 namespace Application.DTOs.Chatting
 {
-    public class MessageDto
-    {
-        public string Type { get; set; } // "text", "voice", or "image"
-        public string? Text { get; set; }
-        public string? VoiceFileUrl { get; set; }
-        public int? DurationSeconds { get; set; }
-        public string? FileUrl { get; set; } // For image or other file types
-        public string? ImageUrl { get; set; } // For image messages
-        public string? Caption { get; set; } // For image captions
-        public string? FileName { get; set; } // For file names
-        public long? FileSizeBytes { get; set; } // For file sizes
-    }
     public class MessageSummaryDto
     {
         public Guid Id { get; set; }
@@ -72,6 +60,7 @@ namespace Application.DTOs.Chatting
                 dto.TranslatedVoiceUrls = null;
                 dto.Duration = null;
                 dto.IsTranslated = false;
+                dto.Type = MessageType.Text.ToString(); // Keep type as Text for deleted messages
             }
             else
             {
@@ -111,7 +100,7 @@ namespace Application.DTOs.Chatting
         public Guid MessageId { get; set; }
         public bool IsStarred { get; set; } // true to star, false to unstar
     }
-    
+
     // DTO for getting starred messages
     public class GetStarredMessagesDto
     {
@@ -120,3 +109,4 @@ namespace Application.DTOs.Chatting
         public int Skip { get; set; } = 0;
     }
 }
+

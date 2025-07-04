@@ -138,10 +138,9 @@ public class MessageRepository : IMessageRepository
 
     public async Task<List<Message>> GetStarredMessagesAsync(Guid conversationId, string userId, int count = 50, int skip = 0)
     {
-        return await _context.Messages
-            .Where(m => m.ConversationId == conversationId && 
-                        !m.IsDeleted &&
-                        m.StarredBy.Contains(userId))
+       var ret =  await _context.Messages
+            .Where(m => m.ConversationId == conversationId &&
+                        !m.IsDeleted)
             .OrderByDescending(m => m.SentAt)
             .Skip(skip)
             .Take(count)
@@ -151,5 +150,8 @@ public class MessageRepository : IMessageRepository
                 .ThenInclude(rm => rm.ConversationUser)
                     .ThenInclude(cu => cu.User)
             .ToListAsync();
+
+        return ret.Where(m => m.StarredBy.Contains(userId)).ToList();
+
     }
 }

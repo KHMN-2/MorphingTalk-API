@@ -14,3 +14,4 @@ namespace Application.DTOs.Auth
         public string ConfirmPassword { get; set; }
     }
 }
+
