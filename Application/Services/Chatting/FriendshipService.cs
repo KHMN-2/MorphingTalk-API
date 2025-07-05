@@ -219,8 +219,9 @@ namespace Application.Services
             
             if (existingFriendship != null)
             {
-                // Remove the blocked relationship entirely since there's no friend relationship
-                await _friendshipRepository.RemoveFriendRelationAsync(existingFriendship);
+                existingFriendship.IsBlocked = false;
+                existingFriendship.BlockedByUserId = null;
+                await _friendshipRepository.UpdateFriendRelationAsync(existingFriendship);
             }
 
             return new ResponseViewModel<string>("User unblocked successfully", "User unblocked successfully", true, 200);

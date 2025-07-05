@@ -22,7 +22,8 @@ namespace Application.Services.Chatting
         private readonly IChatNotificationService _chatNotificationService;
         private readonly IMemoryCache _memoryCache;
         private readonly IConversationRepository _conversationRepository;
-        public MessageService(IEnumerable<IMessageHandler> handlers, IConversationUserRepository conversationUserRepository, IMessageRepository messageRepository, IChatNotificationService chatNotificationService, IMemoryCache memoryCache, ILogger<MessageService> logger, IConversationRepository conversationRepository)
+        private readonly IFriendshipRepository _friendshipRepository;
+        public MessageService(IEnumerable<IMessageHandler> handlers, IConversationUserRepository conversationUserRepository, IMessageRepository messageRepository, IChatNotificationService chatNotificationService, IMemoryCache memoryCache, ILogger<MessageService> logger, IConversationRepository conversationRepository, IFriendshipRepository friendshipRepository)
         {
             _handlers = handlers;
             _conversationUserRepo = conversationUserRepository;
@@ -31,6 +32,7 @@ namespace Application.Services.Chatting
             _memoryCache = memoryCache;
             _logger = logger;
             _conversationRepository = conversationRepository;
+            _friendshipRepository = friendshipRepository;
         }        
         public async Task<string> ProcessMessageAsync(SendMessageDto message, Guid conversationId, string userId)
         {
@@ -43,13 +45,28 @@ namespace Application.Services.Chatting
             var handler = _handlers.FirstOrDefault(h => h.CanHandle(message.Type));
             var cu = await _conversationUserRepo.GetByIdsAsync(conversationId, userId);
             var con = await _conversationRepository.GetByIdAsync(conversationId);
-     
+
+            if (con == null)
+                throw new KeyNotFoundException("Conversation not found");
+
             if (cu == null)
                 throw new KeyNotFoundException("ConversationUser not found");
             if (handler == null)
             {
                 _logger.LogError($"No handler found for message type: {message.Type}");
                 throw new NotSupportedException($"Message type {message.Type} is not supported");
+            }
+            if (con.Type == ConversationType.OneToOne)
+            {
+                var user2 = con.ConversationUsers.FirstOrDefault(cu => cu.UserId != userId);
+                if (user2 == null)
+                    throw new KeyNotFoundException("No other user found in one-to-one conversation");
+                var friendShip = await _friendshipRepository.GetFriendshipAsync(userId, user2.UserId);
+                if (friendShip.IsBlocked)
+                {
+                    _logger.LogWarning($"User {userId} is blocked by {user2.UserId}. Message not sent.");
+                    return "";
+                }
             }
             
             // Set the correct ConversationUser ID

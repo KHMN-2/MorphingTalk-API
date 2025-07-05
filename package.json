@@ -1,0 +1,54 @@
+{
+  "name": "morphingtalk-api-tests",
+  "version": "1.0.0",
+  "description": "Automated API testing suite for MorphingTalk API using Newman and Postman",
+  "main": "run-api-tests.js",
+  "scripts": {
+    "test": "node run-api-tests.js",
+    "test:verbose": "node run-api-tests.js --verbose",
+    "test:quick": "newman run MorphingTalk-API-Postman-Collection.json --environment test-environment.json --reporters cli",
+    "install-newman": "npm install -g newman newman-reporter-html",
+    "setup": "npm install && npm run install-newman",
+    "clean": "rm -rf test-reports && mkdir test-reports"
+  },
+  "keywords": [
+    "api-testing",
+    "newman",
+    "postman",
+    "morphingtalk",
+    "automated-testing",
+    "rest-api"
+  ],
+  "author": "MorphingTalk Team",
+  "license": "MIT",
+  "dependencies": {
+    "newman": "^6.2.1",
+    "newman-reporter-html": "^1.0.5"
+  },
+  "devDependencies": {
+    "newman-reporter-json": "^1.0.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-repo/morphingtalk-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-repo/morphingtalk-api/issues"
+  },
+  "homepage": "https://github.com/your-repo/morphingtalk-api#readme",
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  },
+  "config": {
+    "newman": {
+      "collection": "MorphingTalk-API-Postman-Collection.json",
+      "environment": "test-environment.json",
+      "reporters": [
+        "cli",
+        "json",
+        "html"
+      ]
+    }
+  }
+}

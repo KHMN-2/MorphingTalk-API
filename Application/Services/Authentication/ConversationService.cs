@@ -80,7 +80,7 @@ namespace Application.Services.Authentication
                 }
 
                 var existingConversation = await _conversationRepo.GetOneToOneConversationAsync(creatorUserId, friendUser.Id);
-                if (existingConversation != null)
+                if (existingConversation != null && existingConversation.Type == ConversationType.OneToOne)
                 {
                     var res = ConversationDto.fromCoversation(existingConversation, creatorUserId);
                     return new ResponseViewModel<ConversationDto>(res, "One-to-one conversation already exists.", true, 200);
