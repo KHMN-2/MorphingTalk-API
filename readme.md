@@ -1,14 +1,23 @@
-# MorphingTalk-API Implementation Analysis
+# MorphingTalk-API
 
 ## Project Overview
 
-**MorphingTalk-API** is a sophisticated real-time chat application backend service with advanced voice morphing capabilities, developed as a graduation project. The application enables users to communicate through text and voice messages with AI-powered voice transformation features.
+**MorphingTalk-API** is a sophisticated real-time chat application backend service with advanced voice morphing capabilities. The application enables users to communicate through text and voice messages with AI-powered voice transformation features, built using .NET Core and modern software architecture patterns.
 
-## Architecture & Design Patterns
+## 🚀 Features
 
-### 1. Clean Architecture Implementation
+- **Real-time Communication**: WebSocket-based chat using SignalR
+- **Voice Morphing**: AI-powered voice transformation capabilities
+- **Multi-language Support**: Text translation services integration
+- **Authentication**: JWT-based authentication with Firebase integration
+- **File Management**: Audio, image, and document upload/download
+- **Friend System**: User friendship management with blocking capabilities
+- **Message Types**: Support for text, voice, and image messages
+- **WebRTC Integration**: Voice and video calling capabilities
 
-The project follows Clean Architecture principles with proper separation of concerns:
+## 🏗️ Architecture
+
+This project follows **Clean Architecture** principles with clear separation of concerns:
 
 ```
 ├── Domain/           # Core business entities and rules
@@ -17,302 +26,254 @@ The project follows Clean Architecture principles with proper separation of conc
 └── MorphingTalk-API/ # Web API layer, controllers, configurations
 ```
 
-**Benefits of this approach:**
-- **Dependency Inversion**: Core business logic is independent of external concerns
-- **Testability**: Clear separation enables easier unit testing
-- **Maintainability**: Changes in one layer don't affect others
-- **Scalability**: Easy to extend functionality without breaking existing code
+### Key Patterns Implemented
 
-### 2. Repository Pattern
+- **Repository Pattern**: For data access abstraction
+- **Dependency Injection**: Comprehensive DI configuration
+- **CQRS-like Structure**: Separation of commands and queries
+- **Entity Framework Core**: Code-first database approach
+- **SignalR Hubs**: Real-time communication management
 
-The application implements the Repository pattern for data access:
+## 🛠️ Technology Stack
+
+- **.NET 8.0**: Backend framework
+- **Entity Framework Core**: ORM and database management
+- **SignalR**: Real-time communication
+- **SQL Server**: Primary database
+- **Firebase Authentication**: User authentication
+- **Azure Translator**: Text translation services
+- **JWT**: Token-based authentication
+- **AutoMapper**: Object mapping
+- **Swagger/OpenAPI**: API documentation
+
+## ⚙️ Prerequisites
+
+Before running this application, ensure you have:
+
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) or SQL Server Express
+- [Visual Studio 2022](https://visualstudio.microsoft.com/) or [Visual Studio Code](https://code.visualstudio.com/)
+- Firebase project for authentication
+- Azure Translator service (optional, for translation features)
+- AI service for voice morphing (optional)
+
+## 🚀 Quick Start
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/yourusername/MorphingTalk-API.git
+cd MorphingTalk-API
+```
+
+### 2. Configure Database
+
+Update the connection string in `MorphingTalk-API/appsettings.json`:
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=YOUR_DB_SERVER;Database=YOUR_DATABASE;User Id=YOUR_USERNAME;Password=YOUR_PASSWORD;Encrypt=True;TrustServerCertificate=True;MultipleActiveResultSets=True;"
+  }
+}
+```
+
+### 3. Configure Services
+
+Update the configuration in `MorphingTalk-API/appsettings.json`:
+
+```json
+{
+  "JWT": {
+    "Issuer": "your-app-name",
+    "Audience": "your-app-name",
+    "signingKey": "YOUR_JWT_SIGNING_KEY_MINIMUM_256_BITS"
+  },
+  "Firebase": {
+    "ProjectId": "your-firebase-project-id",
+    "ServiceAccountKeyPath": "firebase-service-account-key.json"
+  },
+  "SmtpSettings": {
+    "Host": "smtp.gmail.com",
+    "Port": 587,
+    "UserName": "your-email@gmail.com",
+    "Password": "your-app-password",
+    "EnableSsl": true
+  },
+  "AzureTranslator": {
+    "SubscriptionKey": "YOUR_AZURE_TRANSLATOR_API_KEY",
+    "SubscriptionRegion": "your-region",
+    "Endpoint": "https://api.cognitive.microsofttranslator.com"
+  },
+  "AIBaseLink": "http://your-ai-service-url:port",
+  "AIJWTSecret": "YOUR_AI_SERVICE_JWT_TOKEN"
+}
+```
+
+### 4. Set Up Firebase
+
+1. Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
+2. Enable Authentication and configure your preferred sign-in methods
+3. Generate a service account key:
+   - Go to Project Settings > Service Accounts
+   - Click "Generate new private key"
+   - Save the JSON file as `firebase-service-account-key.json` in the `MorphingTalk-API` folder
+
+### 5. Database Migration
+
+```bash
+cd MorphingTalk-API
+dotnet ef database update
+```
+
+### 6. Run the Application
+
+```bash
+dotnet run
+```
+
+The API will be available at `https://localhost:7218` (or the port specified in `launchSettings.json`).
+
+## 📖 API Documentation
+
+Once the application is running, you can access:
+
+- **Swagger UI**: `https://localhost:7218/swagger`
+- **API Endpoints**: See `API-Endpoints-Quick-Reference.md` for detailed endpoint documentation
+
+## 🔧 Configuration Guide
+
+### JWT Configuration
+
+Generate a secure signing key (minimum 256 bits):
 
 ```csharp
-// Example from IUserRepository interface
-public interface IUserRepository
+// Example: Generate a secure key
+var key = new byte[64];
+using (var rng = RandomNumberGenerator.Create())
 {
-    Task<User> GetUserByIdAsync(string id);
-    Task<User> GetUserByEmailAsync(string email);
-    Task UpdateUserAsync(User user);
+    rng.GetBytes(key);
 }
+var base64Key = Convert.ToBase64String(key);
 ```
 
-**Implementation Benefits:**
-- **Abstraction**: Controllers don't directly depend on Entity Framework
-- **Testability**: Easy to mock data layer for unit tests
-- **Consistency**: Standardized data access patterns across the application
+### SMTP Configuration
 
-### 3. Dependency Injection Configuration
+For email services, configure Gmail App Password:
 
-Comprehensive DI setup in `ServiceExtensions.cs`:
+1. Enable 2-Factor Authentication on your Gmail account
+2. Generate an App Password
+3. Use the App Password in the `SmtpSettings.Password` field
 
-```54:58:MorphingTalk-API/Extenstions/ServiceExtensions.cs
-services.AddScoped<IUserRepository, UserRepository>();
-services.AddScoped<IUserService, UserService>();
-services.AddScoped<ITokenService, TokenService>();
-services.AddScoped<IOTPService, OTPService>();
-services.AddScoped<IAuthService, AuthService>();
+### Azure Translator Setup
+
+1. Create an Azure Translator resource
+2. Get the subscription key and region
+3. Update the `AzureTranslator` configuration
+
+## 🧪 Testing
+
+### Running Unit Tests
+
+```bash
+dotnet test Tests/
 ```
 
-## Core Features Implementation
+### API Testing with Postman
 
-### 1. Real-Time Communication (SignalR)
+1. Import the Postman collection: `MorphingTalk-API-Postman-Collection.json`
+2. Set up environment variables as described in `Postman-Collection-Guide.md`
+3. Run the automated test suite
 
-The `ChatHub` implements comprehensive real-time features:
+### PowerShell Testing
 
-**Key Capabilities:**
-- **Group Management**: Users join/leave conversation groups
-- **Typing Indicators**: Real-time typing status updates
-- **WebRTC Integration**: Call signaling for voice/video calls
-- **Online Status Tracking**: User presence management
-
-```33:39:Application/Hubs/ChatHub.cs
-public async Task JoinConversation(string conversationId)
-{
-    await Groups.AddToGroupAsync(Context.ConnectionId, conversationId);
-    var userId = Context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "Unknown";
-    _logger.LogInformation($"User {userId} (Connection: {Context.ConnectionId}) joined conversation group {conversationId}");
-}
+```bash
+.\run-tests.ps1
 ```
 
-**Technical Highlights:**
-- Thread-safe concurrent collections for managing user states
-- Proper connection lifecycle management
-- Comprehensive logging for debugging and monitoring
+## 📁 Project Structure
 
-### 2. Voice Morphing & AI Integration
-
-The `VoiceTrainingController` manages the voice transformation pipeline:
-
-**Process Flow:**
-1. **Audio Upload**: Validates file format and size
-2. **AI Service Integration**: Sends training data to external AI service
-3. **Asynchronous Processing**: Tracks training status via task IDs
-4. **Model Management**: Stores voice model metadata in database
-
-```75:85:MorphingTalk-API/Controllers/VoiceTrainingController.cs
-// Prepare multipart form data
-using var form = new MultipartFormDataContent();
-using var fileStream = file.OpenReadStream();
-var fileContent = new StreamContent(fileStream);
-
-string mimeType = fileExtension switch
-{
-    ".wav" => "audio/wav",
-    ".m4a" => "audio/m4a",
-    ".mp3" => "audio/mpeg",
-    ".flac" => "audio/flac",
-    _ => "application/octet-stream"
-};
+```
+MorphingTalk-API/
+├── Domain/
+│   ├── Entities/
+│   │   ├── Users/          # User entities
+│   │   ├── Chatting/       # Message and conversation entities
+│   │   └── AIModels/       # Voice model entities
+├── Application/
+│   ├── DTOs/               # Data Transfer Objects
+│   ├── Interfaces/         # Service and repository interfaces
+│   ├── Services/           # Business logic services
+│   └── Hubs/              # SignalR hubs
+├── Infrastructure/
+│   ├── Data/              # Database context and migrations
+│   └── Repositories/      # Data access implementations
+└── MorphingTalk-API/
+    ├── Controllers/       # API controllers
+    ├── Extensions/        # Service registration extensions
+    └── wwwroot/          # Static files and uploads
 ```
 
-**Advanced Features:**
-- Multi-format audio support (WAV, M4A, MP3, FLAC)
-- Secure AI service communication with JWT tokens
-- Comprehensive error handling and user feedback
-- Database tracking of training progress
+## 🔐 Security Considerations
 
-### 3. Message Processing System
+- **Environment Variables**: Store sensitive data in environment variables or Azure Key Vault
+- **HTTPS**: Always use HTTPS in production
+- **CORS**: Configure CORS policies appropriately
+- **JWT Expiration**: Set appropriate token expiration times
+- **File Upload Validation**: Implement proper file validation and size limits
+- **Rate Limiting**: Consider implementing rate limiting for API endpoints
 
-Sophisticated message handling with polymorphism:
+## 🚀 Deployment
 
-```146:162:MorphingTalk-API/Controllers/ChattingController.cs
-[HttpPost("conversations/{conversationId}/messages")]
-public async Task<IActionResult> SendMessage(Guid conversationId, [FromBody] SendMessageDto dto)
-{
-    var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-    if (string.IsNullOrEmpty(userId))
-    {
-        return StatusCode(StatusCodes.Status401Unauthorized,
-            new ResponseViewModel<string>(null, "User not authenticated", false, StatusCodes.Status401Unauthorized));
-    }
+### Prerequisites for Deployment
 
-    if (dto == null)
-    {
-        return StatusCode(StatusCodes.Status400BadRequest,
-            new ResponseViewModel<string>(null, "Message data is required", false, StatusCodes.Status400BadRequest));
-    }
+1. Configure production database
+2. Set up production environment variables
+3. Configure domain and SSL certificates
+4. Set up file storage (Azure Blob Storage recommended)
+
+### Environment Variables
+
+Create the following environment variables for production:
+
+```bash
+ConnectionStrings__DefaultConnection=your_production_db_connection
+JWT__SigningKey=your_secure_jwt_key
+Firebase__ProjectId=your_firebase_project_id
+SmtpSettings__UserName=your_email
+SmtpSettings__Password=your_email_app_password
+AzureTranslator__SubscriptionKey=your_azure_key
+AIBaseLink=your_ai_service_url
+AIJWTSecret=your_ai_jwt_token
 ```
 
-**Message Types Supported:**
-- Text messages with translation capabilities
-- Voice messages with morphing features
-- File attachments with validation
+## 🤝 Contributing
 
-### 4. Authentication & Authorization
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-Robust security implementation:
+## 📝 License
 
-**JWT Configuration:**
-```65:77:MorphingTalk-API/Extenstions/ServiceExtensions.cs
-}).AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidIssuer = configuration["JWT:Issuer"],
-        ValidateAudience = true,
-        ValidAudience = configuration["JWT:Audience"],
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(configuration["JWT:SigningKey"])
-        )
-    };
-});
-```
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-**Identity Configuration:**
-```56:64:MorphingTalk-API/Extenstions/ServiceExtensions.cs
-services.AddIdentity<User, IdentityRole>(options =>
-{
-    options.Password.RequireDigit = true;
-    options.Password.RequireLowercase = true;
-    options.Password.RequireUppercase = true;
-    options.Password.RequireNonAlphanumeric = true;
-    options.Password.RequiredLength = 8;
-}).AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
-```
+## 📞 Support
 
-### 5. Data Model Design
+For support and questions:
 
-**User Entity** extends `IdentityUser` with rich profile features:
+- Create an issue in this repository
+- Check the documentation files in the repository
+- Review the API endpoint documentation
 
-```9:33:Domain/Entities/Users/User.cs
-public class User : IdentityUser
-{
-    [Required]
-    public string? FullName { get; set; }
-    [Required]
-    public DateTime CreatedOn { get; set; }
-    [Required]
-    public DateTime LastUpdatedOn { get; set; }
-    [Required]
-    public bool IsDeactivated { get; set; } = false;
-    public bool? IsFirstLogin { get; set; } = null;
-    public ICollection<ConversationUser> ConversationUsers { get; set; } = new List<ConversationUser>();
-    public string? Gender { get; set; }
-    public string? NativeLanguage { get; set; }
-    public string? AboutStatus { get; set; }
-    public string? ProfilePicturePath { get; set; }
-    public ICollection<string>? PastProfilePicturePaths { get; set; }
-    public bool IsOnline { get; set; } = false;
-    public DateTime? LastSeen { get; set; } = null;
-    public bool IsTrainedVoice { get; set; }
-    public string? VoiceModelId { get; set; } // Foreign key
-    public UserVoiceModel? VoiceModel { get; set; }
-    public bool UseRobotVoice { get; set; } = true;
-    public bool MuteNotifications { get; set; } = false; // Optional, if needed
-    public bool TranslateMessages { get; set; } = false; // Optional, if needed
-}
-```
+## 🔄 Version History
 
-**Database Design Features:**
-- **Polymorphic Message Types**: Using Table-Per-Hierarchy inheritance
-- **Many-to-Many Relationships**: Proper conversation-user associations
-- **Cascade Deletes**: Configured for data integrity
-- **Unique Constraints**: Preventing duplicate relationships
+- **v1.0.0**: Initial release with core chat functionality
+- **v1.1.0**: Added voice morphing capabilities
+- **v1.2.0**: Implemented translation services
+- **v1.3.0**: Added friend system and blocking features
 
-## Technical Strengths
+---
 
-### 1. **Scalability Considerations**
-- **SignalR Groups**: Efficient message broadcasting
-- **Async/Await Pattern**: Non-blocking operations throughout
-- **HttpClient Factory**: Proper HTTP client management
-- **Connection Pooling**: Entity Framework optimization
-
-### 2. **Security Implementation**
-- **JWT Authentication**: Stateless authentication
-- **CORS Configuration**: Controlled cross-origin access
-- **Authorization Attributes**: Endpoint-level security
-- **Input Validation**: Comprehensive DTO validation
-
-### 3. **Error Handling & Logging**
-- **Structured Logging**: Comprehensive logging throughout
-- **Exception Handling**: Graceful error responses
-- **Status Code Standards**: RESTful response patterns
-- **User-Friendly Messages**: Clear error communication
-
-### 4. **Code Quality**
-- **SOLID Principles**: Well-structured, maintainable code
-- **Interface Segregation**: Focused, cohesive interfaces
-- **Dependency Injection**: Loose coupling throughout application
-- **AutoMapper Integration**: Clean object mapping
-
-## Areas for Enhancement
-
-### 1. **Performance Optimization**
-- **Caching Strategy**: Implement Redis for frequently accessed data
-- **Database Indexing**: Optimize query performance
-- **Background Processing**: Use Hangfire for heavy operations
-- **File Storage**: Consider cloud storage for media files
-
-### 2. **Monitoring & Observability**
-- **Health Checks**: Application monitoring endpoints
-- **Metrics Collection**: Performance monitoring
-- **Distributed Tracing**: Request tracking across services
-- **Error Reporting**: Centralized error tracking
-
-### 3. **Testing Strategy**
-- **Unit Tests**: Comprehensive service layer testing
-- **Integration Tests**: End-to-end API testing
-- **Load Testing**: Performance under concurrent load
-- **SignalR Testing**: Real-time communication testing
-
-## Configuration Management
-
-The application uses a well-structured configuration approach:
-
-```1:26:MorphingTalk-API/appsettings.json
-{
-    "ConnectionStrings": {
-        "DefaultConnection": "Server=db15713.public.databaseasp.net; Database=db15713; User Id=db15713; Password=2n=N?Zh9j_8P; Encrypt=True; TrustServerCertificate=True; MultipleActiveResultSets=True;"
-    },
-    "JWT": {
-        "Issuer": "morphingtalk",
-        "Audience": "morphingtalk",
-        "signingKey": "bebac442ea672a5521220a9ee5157169c49ae28a0e83f8e1fe9b373fdd78697f139fc8a0a9c150472c941b1bee36bcb5251ed58929e4fa0ab63d2fe7302473ff68cce801cad04bd667add778d3b46dcc67cdfaca19e7d293a8ad49ada15b63b694e65f17333a6e67de5f7a69a81b19e302c4db0ba535a88077d70d2757041910113b4b6f85987f36255a71beb950c81a78aa95bf531cb7e31d791653490ce50f39af70c586325dbb5acd0fd294baf0f0c5c72ea76bbc1b4270ae6ba937aec38d0520851a59cdf67067320d557416d5efd9cd280c79a481a516bf7e7839262f26cdf8a91fd757dad5a47abd26c2e5c0bf9f0d470c0cc013cc1dbca1c7b6d873e4"
-    },
-    "SmtpSettings": {
-        "Host": "smtp.gmail.com",
-        "Port": 587,
-        "UserName": "techtitansknm@gmail.com",
-        "Password": "hwlisijqrmwrswmn",
-        "EnableSsl": true
-    },
-    "Logging": {
-        "LogLevel": {
-            "Default": "Information",
-            "Microsoft.AspNetCore": "Warning",
-            "Microsoft.EntityFrameworkCore.Database.Command": "Information"
-        }
-    },
-    "AIBaseLink": "http://34.231.46.228:6969",
-    "AIJWTSecret": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0IiwiZXhwIjoxNzY1NTUwODI0LjM5OTI1LCJpYXQiOjE3NDk3MzYwMjQuMzk5MjUsImlzcyI6ImNoYXRhcHAiLCJhdWQiOiJtaWNyb3NlcnZpY2UifQ.hhFRBdOp2728CtUht-mwgdYrshmMJMFqPkJ7cLfJp9krAXMJmNOtgvqoY4uS0R-dRd4GKo_ulptfl44vRwtrMw",
-    "AllowedHosts": "*"
-}
-```
-
-## Conclusion
-
-The MorphingTalk-API represents a sophisticated implementation of modern web API development practices. The project demonstrates:
-
-- **Advanced Architecture**: Clean Architecture with proper separation of concerns
-- **Cutting-Edge Features**: AI-powered voice morphing and real-time communication
-- **Robust Security**: Comprehensive authentication and authorization
-- **Scalable Design**: Well-structured for future growth and maintenance
-- **Professional Standards**: Industry best practices throughout the codebase
-
-This implementation showcases advanced software engineering skills and represents a production-ready chat application with innovative voice morphing capabilities suitable for a graduation project demonstration.
-
-## Technologies Used
-
-- **.NET 8.0**: Latest framework version
-- **Entity Framework Core**: ORM with Code-First approach
-- **SignalR**: Real-time web communication
-- **ASP.NET Core Identity**: Authentication and user management
-- **JWT Bearer Tokens**: Stateless authentication
-- **AutoMapper**: Object-to-object mapping
-- **SQL Server**: Primary database
-- **External AI Service**: Voice processing and morphing
-- **SMTP Integration**: Email notifications
-- **WebRTC**: Voice/video calling capabilities 
+**Note**: This project was developed as a graduation project demonstrating modern software architecture patterns and real-time communication technologies. 

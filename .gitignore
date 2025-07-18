@@ -368,3 +368,27 @@ FodyWeavers.xsd
 # Firebase service account key (contains sensitive credentials)
 firebase-service-account-key.json
 **/firebase-service-account-key.json
+
+# Additional sensitive files
+appsettings.Production.json
+appsettings.Staging.json
+*.publishsettings
+*.pubxml.user
+.env
+.env.local
+.env.production
+.env.staging
+
+# Deployment files
+PublishProfiles/
+**/PublishProfiles/
+
+# Upload directories with user content
+**/wwwroot/Uploads/*/
+**/wwwroot/translated_audio/
+!**/wwwroot/Uploads/.gitkeep
+!**/wwwroot/translated_audio/.gitkeep
+
+# AI service configurations
+ai-config.json
+voice-models/
